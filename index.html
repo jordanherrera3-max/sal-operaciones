@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>SAL Operaciones — AIES-SOARG</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -13,6 +14,7 @@
   --amber-bg:#FAEEDA;--amber-bd:#FAC775;--amber-tx:#854F0B;
   --green-bg:#EAF3DE;--green-bd:#97C459;--green-tx:#3B6D11;
   --blue-bg:#E6F1FB;--blue-bd:#85B7EB;--blue-tx:#185FA5;
+  --gold:#F59E0B;
 }
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
@@ -26,13 +28,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .auth-label{display:block;font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px}
 .auth-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;font-family:inherit;margin-bottom:14px;transition:border-color .15s}
 .auth-input:focus{border-color:var(--accent)}
-.auth-btn{width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
-.auth-btn:hover{opacity:.9}
+.auth-btn{width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
 .auth-btn:disabled{opacity:.5;cursor:not-allowed}
 .auth-err{font-size:12px;color:#A32D2D;background:#FCEBEB;padding:8px 12px;border-radius:6px;margin-bottom:12px;display:none}
 .auth-err.show{display:block}
 
-/* APP SHELL */
+/* SHELL */
 .app{display:none;flex-direction:column;min-height:100vh}
 .app.visible{display:flex}
 .topbar{background:var(--navy);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40}
@@ -42,25 +43,35 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .topbar-sub{font-size:10px;color:rgba(255,255,255,0.5);margin-top:1px}
 .topbar-right{display:flex;align-items:center;gap:8px}
 .badge{font-size:10px;background:var(--accent);color:#fff;padding:3px 8px;border-radius:20px}
+.admin-badge{font-size:10px;background:var(--gold);color:#fff;padding:3px 8px;border-radius:20px;font-weight:700}
 .logout-btn{font-size:11px;color:rgba(255,255,255,0.6);cursor:pointer;padding:4px 8px;border:0.5px solid rgba(255,255,255,0.2);border-radius:6px;background:transparent}
-.logout-btn:hover{color:#fff;border-color:rgba(255,255,255,0.5)}
+.logout-btn:hover{color:#fff}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#22C55E;flex-shrink:0}
+.sync-dot.offline{background:#EF4444}
 
 .tab-bar{display:flex;border-bottom:1px solid var(--border);background:#fff;overflow-x:auto;scrollbar-width:none;position:sticky;top:56px;z-index:39}
 .tab-bar::-webkit-scrollbar{display:none}
 .tab{flex:0 0 auto;padding:12px 14px;font-size:11px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .15s}
 .tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+.tab.admin-tab{color:var(--gold)}
+.tab.admin-tab.active{border-bottom-color:var(--gold)}
 
-.view{display:none;padding-bottom:32px;max-width:600px;margin:0 auto;width:100%}
+.view{display:none;padding-bottom:32px;max-width:700px;margin:0 auto;width:100%}
 .view.active{display:block}
-
-/* CARDS */
 .page-pad{padding:16px}
-.section-hd{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:16px 0 10px}
+.section-hd{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:16px 0 10px}
+
+/* STATS */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .stat-card{background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border)}
 .stat-lbl{font-size:11px;color:var(--muted);margin-bottom:4px}
 .stat-val{font-size:24px;font-weight:700;color:var(--text)}
 .stat-val.r{color:#791F1F}.stat-val.a{color:#854F0B}.stat-val.g{color:#3B6D11}
+
+/* CHARTS */
+.chart-card{background:#fff;border-radius:12px;padding:16px;border:1px solid var(--border);margin-bottom:14px}
+.chart-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px}
+.chart-wrap{position:relative;height:220px}
 
 /* TYPE GRID */
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -72,7 +83,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* FORM */
 .back-btn{display:flex;align-items:center;gap:6px;padding:12px 16px;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:1px solid var(--border);background:#fff}
-.back-btn:hover{color:var(--text)}
 .form-body{padding:16px}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px}
@@ -82,6 +92,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,107,230,.1)}
 .field textarea{resize:vertical;min-height:80px;line-height:1.5}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .sev-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .sev-opt{padding:10px 4px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;transition:all .12s}
 .sev-opt.s-baja{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-tx)}
@@ -116,17 +127,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .alert-banner p{font-size:11px;line-height:1.6;color:var(--text)}
 .alert-banner strong{font-weight:600}
 .contact-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
-.contact-chip{font-size:10px;font-weight:600;background:rgba(0,0,0,0.08);padding:3px 9px;border-radius:20px;color:var(--text)}
+.contact-chip{font-size:10px;font-weight:600;background:rgba(0,0,0,0.08);padding:3px 9px;border-radius:20px}
 
-/* SPEC BOX */
 .spec-box{background:#F8FAFC;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px}
 .spec-label{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.07em}
-
-/* PUENTE WARN */
 .puente-warn{background:#FFF8E1;border:1px solid #EF9F27;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:11px;line-height:1.6;color:#633806}
 .puente-warn strong{font-weight:700;display:block;margin-bottom:2px}
 
-/* TURNO */
 .turno-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .turno-btn{padding:10px 4px;border:1.5px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;background:#fff;transition:all .12s}
 .turno-btn:hover{border-color:var(--accent)}
@@ -135,20 +142,31 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .turno-btn.on .t-name{color:var(--accent2)}
 .t-hora{font-size:10px;color:var(--muted);margin-top:2px}
 
-/* PHOTO */
+/* PHOTOS */
 .photo-zone{border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;background:#FAFBFD;transition:border-color .15s}
 .photo-zone:hover{border-color:var(--accent)}
 .photo-zone p{font-size:12px;color:var(--muted);margin-top:5px}
 .photo-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.photo-thumb{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid var(--border)}
+.photo-thumb{width:70px;height:70px;border-radius:8px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin:10px 0}
+.photo-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer}
+.photo-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;display:none;align-items:center;justify-content:center}
+.photo-fullscreen.open{display:flex}
+.photo-fullscreen img{max-width:95vw;max-height:95vh;border-radius:8px;object-fit:contain}
+.photo-fullscreen-close{position:absolute;top:16px;right:16px;color:#fff;font-size:28px;cursor:pointer;background:rgba(0,0,0,.5);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 
-/* SUBMIT */
-.btn-submit{width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-submit:hover{background:var(--navy2)}
+.btn-submit{width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-submit:disabled{opacity:.5;cursor:not-allowed}
 .btn-submit .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
 .btn-submit.loading .spinner{display:block}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* UPLOAD PROGRESS */
+.upload-progress{background:#F1F5F9;border-radius:8px;padding:10px 12px;margin-top:8px;display:none}
+.upload-progress.show{display:block}
+.progress-bar{background:var(--border);border-radius:4px;height:6px;margin-top:6px;overflow:hidden}
+.progress-fill{background:var(--accent);height:100%;border-radius:4px;transition:width .3s;width:0}
+.progress-txt{font-size:11px;color:var(--muted)}
 
 /* REPORT LIST */
 .chips-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
@@ -171,10 +189,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .empty{text-align:center;padding:48px 20px}
 .empty p{font-size:14px;color:var(--muted);margin-top:10px}
 
-/* DETAIL MODAL */
+/* DETAIL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;align-items:flex-end;justify-content:center}
 .overlay.open{display:flex}
-.sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;padding:16px;max-height:90vh;overflow-y:auto}
+.sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:700px;padding:16px;max-height:92vh;overflow-y:auto}
 .handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
 .d-title{font-size:16px;font-weight:700;margin-bottom:4px}
 .d-art{font-size:11px;color:var(--muted);margin-bottom:12px}
@@ -183,8 +201,34 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .d-row:last-of-type{border-bottom:none}
 .d-k{font-size:12px;color:var(--muted)}
 .d-v{font-size:12px;font-weight:600;color:var(--text);text-align:right;max-width:60%}
-.btn-exp{width:100%;padding:12px;background:#F1F5F9;color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:10px}
-.btn-exp:hover{background:var(--border)}
+.d-actions{display:flex;gap:8px;margin-top:12px}
+.btn-edit{flex:1;padding:11px;background:var(--blue-bg);color:var(--blue-tx);border:1px solid var(--blue-bd);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-delete{flex:1;padding:11px;background:var(--red-bg);color:var(--red-tx);border:1px solid var(--red-bd);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-exp{width:100%;padding:12px;background:#F1F5F9;color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px}
+
+/* EDIT MODAL */
+.edit-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;align-items:center;justify-content:center;padding:16px}
+.edit-overlay.open{display:flex}
+.edit-card{background:#fff;border-radius:16px;width:100%;max-width:500px;padding:20px;max-height:90vh;overflow-y:auto}
+.edit-title{font-size:15px;font-weight:700;margin-bottom:16px}
+.edit-actions{display:flex;gap:8px;margin-top:16px}
+.btn-cancel{flex:1;padding:11px;background:#F1F5F9;color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-save{flex:1;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* ADMIN PANEL */
+.admin-section{background:#fff;border-radius:12px;border:1px solid var(--border);margin-bottom:14px;overflow:hidden}
+.admin-section-hd{padding:14px 16px;font-size:13px;font-weight:700;color:var(--text);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.admin-section-hd .crown{font-size:16px}
+.user-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:0.5px solid var(--border)}
+.user-row:last-child{border-bottom:none}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--blue-tx);flex-shrink:0}
+.user-info{flex:1}
+.user-email{font-size:13px;font-weight:500;color:var(--text)}
+.user-meta{font-size:11px;color:var(--muted)}
+.btn-del-user{padding:5px 12px;background:var(--red-bg);color:var(--red-tx);border:1px solid var(--red-bd);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.add-user-form{padding:14px 16px}
+.add-user-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.btn-add-user{padding:10px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
 
 /* PROTOCOLOS */
 .emer-card{border-radius:12px;padding:14px;margin-bottom:12px}
@@ -199,78 +243,58 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .emer-steps li::before{content:'→';position:absolute;left:0;color:var(--muted);font-size:11px}
 .emer-tel{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .emer-tel a{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(0,0,0,0.07);color:var(--text);text-decoration:none}
-.emer-tel a:hover{background:rgba(0,0,0,0.12)}
 
-/* LOADING SCREEN */
 .loading-screen{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;color:#fff}
 .loading-screen.hide{display:none}
 .loading-screen p{font-size:13px;color:rgba(255,255,255,0.6);margin-top:12px}
-
-/* TOAST */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;transition:transform .25s;z-index:99;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
 .toast.show{transform:translateX(-50%) translateY(0)}
-
-/* SYNC INDICATOR */
-.sync-dot{width:6px;height:6px;border-radius:50%;background:#22C55E;flex-shrink:0}
-.sync-dot.offline{background:#EF4444}
-
 input[type=file]{display:none}
-
-@media(min-width:768px){
+@media(min-width:640px){
   .type-grid{grid-template-columns:repeat(3,1fr)}
   .stats-grid{grid-template-columns:repeat(4,1fr)}
   .view{padding:0 20px 32px}
-  .topbar{padding:14px 24px}
 }
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="loading-screen" id="loading-screen">
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
   <p>Conectando con AIES-SOARG...</p>
 </div>
 
-<!-- AUTH -->
 <div class="auth-wrap" id="auth-wrap" style="display:none">
   <div class="auth-card">
     <div class="auth-logo">
-      <div class="auth-logo-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <div>
-        <div class="auth-title">SAL Operaciones</div>
-        <div class="auth-sub">NSOAM — AIES-SOARG</div>
-      </div>
+      <div class="auth-logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div><div class="auth-title">SAL Operaciones</div><div class="auth-sub">NSOAM — AIES-SOARG</div></div>
     </div>
     <div class="auth-err" id="auth-err"></div>
     <label class="auth-label">Correo electrónico</label>
-    <input class="auth-input" type="email" id="auth-email" placeholder="oficial@aeropuerto.gob.sv" autocomplete="email">
+    <input class="auth-input" type="email" id="auth-email" placeholder="oficial@aeropuerto.gob.sv">
     <label class="auth-label">Contraseña</label>
-    <input class="auth-input" type="password" id="auth-pass" placeholder="••••••••" autocomplete="current-password">
+    <input class="auth-input" type="password" id="auth-pass" placeholder="••••••••">
     <button class="auth-btn" id="auth-btn" onclick="doLogin()">Ingresar</button>
   </div>
 </div>
 
-<!-- APP -->
 <div class="app" id="app">
   <div class="topbar">
-    <div class="topbar-logo">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    </div>
+    <div class="topbar-logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
     <div class="topbar-info">
       <div class="topbar-title">Control de Incidentes — AIES-SOARG</div>
       <div class="topbar-sub">NSOAM 001/2024 · Área de Movimiento</div>
     </div>
     <div class="topbar-right">
-      <div class="sync-dot" id="sync-dot" title="Conectado"></div>
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="admin-badge-top" class="admin-badge" style="display:none">ADMIN</span>
       <span class="badge" id="badge">0</span>
       <button class="logout-btn" onclick="doLogout()">Salir</button>
     </div>
   </div>
 
-  <div class="tab-bar">
+  <div class="tab-bar" id="tab-bar">
     <div class="tab active" onclick="goTab('nuevo')">Nuevo</div>
     <div class="tab" onclick="goTab('dashboard')">Dashboard</div>
     <div class="tab" onclick="goTab('sanciones')">Sanciones</div>
@@ -283,55 +307,19 @@ input[type=file]{display:none}
     <div id="step-tipo" class="page-pad">
       <div class="section-hd">Categoría del incidente</div>
       <div class="type-grid">
-        <div class="type-card" onclick="selectType('accidente')">
-          <div class="type-icon" style="background:#FCEBEB">💥</div>
-          <div class="type-name">Accidente / Colisión</div>
-          <div class="type-count" id="cnt-accidente">0 registros</div>
-        </div>
-        <div class="type-card" onclick="selectType('incidente')">
-          <div class="type-icon" style="background:#FAEEDA">⚠️</div>
-          <div class="type-name">Incidente operativo</div>
-          <div class="type-count" id="cnt-incidente">0 registros</div>
-        </div>
-        <div class="type-card" onclick="selectType('sancion')">
-          <div class="type-icon" style="background:#EEF4FF">📋</div>
-          <div class="type-name">Sanción conductor / peatón</div>
-          <div class="type-count" id="cnt-sancion">0 registros</div>
-        </div>
-        <div class="type-card" onclick="selectType('derrame')">
-          <div class="type-icon" style="background:#FAEEDA">🛢️</div>
-          <div class="type-name">Derrame combustible / hidráulico</div>
-          <div class="type-count" id="cnt-derrame">0 registros</div>
-        </div>
-        <div class="type-card" onclick="selectType('fod')">
-          <div class="type-icon" style="background:#EAF3DE">🔍</div>
-          <div class="type-name">FOD — Objeto foráneo</div>
-          <div class="type-count" id="cnt-fod">0 registros</div>
-        </div>
-        <div class="type-card" onclick="selectType('puente')">
-          <div class="type-icon" style="background:#E6F1FB">🔧</div>
-          <div class="type-name">Falla de puente de abordaje</div>
-          <div class="type-count" id="cnt-puente">0 registros</div>
-        </div>
+        <div class="type-card" onclick="selectType('accidente')"><div class="type-icon" style="background:#FCEBEB">💥</div><div class="type-name">Accidente / Colisión</div><div class="type-count" id="cnt-accidente">0 registros</div></div>
+        <div class="type-card" onclick="selectType('incidente')"><div class="type-icon" style="background:#FAEEDA">⚠️</div><div class="type-name">Incidente operativo</div><div class="type-count" id="cnt-incidente">0 registros</div></div>
+        <div class="type-card" onclick="selectType('sancion')"><div class="type-icon" style="background:#EEF4FF">📋</div><div class="type-name">Sanción conductor / peatón</div><div class="type-count" id="cnt-sancion">0 registros</div></div>
+        <div class="type-card" onclick="selectType('derrame')"><div class="type-icon" style="background:#FAEEDA">🛢️</div><div class="type-name">Derrame combustible / hidráulico</div><div class="type-count" id="cnt-derrame">0 registros</div></div>
+        <div class="type-card" onclick="selectType('fod')"><div class="type-icon" style="background:#EAF3DE">🔍</div><div class="type-name">FOD — Objeto foráneo</div><div class="type-count" id="cnt-fod">0 registros</div></div>
+        <div class="type-card" onclick="selectType('puente')"><div class="type-icon" style="background:#E6F1FB">🔧</div><div class="type-name">Falla de puente de abordaje</div><div class="type-count" id="cnt-puente">0 registros</div></div>
       </div>
     </div>
 
     <div id="step-form" style="display:none">
-      <div class="back-btn" onclick="backToTypes()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-        Cambiar categoría
-      </div>
-
-      <div id="banner-derrame" class="alert-banner derrame" style="display:none;margin:12px 16px 0">
-        <span style="font-size:20px;flex-shrink:0">🚨</span>
-        <div><p><strong>Protocolo C1-57 — Derrame</strong><br>1. Informar a SEI y Oficiales de Rampa inmediatamente<br>2. No pasar vehículos sobre el combustible<br>3. Retirar vehículos encendidos del área</p>
-        <div class="contact-chips"><span class="contact-chip">SEI: 2375-2300</span><span class="contact-chip">Rampa: 2375-2281</span><span class="contact-chip">Jefatura: 7070-8074</span></div></div>
-      </div>
-      <div id="banner-fod" class="alert-banner fod" style="display:none;margin:12px 16px 0">
-        <span style="font-size:20px;flex-shrink:0">🔍</span>
-        <div><p><strong>Protocolo F4-7 — FOD</strong><br>Remover inmediatamente y depositar en contenedor FOD designado.</p>
-        <div class="contact-chips"><span class="contact-chip">Rampa: 2375-2281</span><span class="contact-chip">7070-8269</span></div></div>
-      </div>
+      <div class="back-btn" onclick="backToTypes()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Cambiar categoría</div>
+      <div id="banner-derrame" class="alert-banner derrame" style="display:none;margin:12px 16px 0"><span style="font-size:20px;flex-shrink:0">🚨</span><div><p><strong>Protocolo C1-57</strong><br>1. Informar a SEI y Oficiales de Rampa<br>2. No pasar vehículos sobre el combustible<br>3. Retirar vehículos encendidos del área</p><div class="contact-chips"><span class="contact-chip">SEI: 2375-2300</span><span class="contact-chip">Rampa: 2375-2281</span><span class="contact-chip">Jefatura: 7070-8074</span></div></div></div>
+      <div id="banner-fod" class="alert-banner fod" style="display:none;margin:12px 16px 0"><span style="font-size:20px;flex-shrink:0">🔍</span><div><p><strong>Protocolo F4-7</strong><br>Remover inmediatamente y depositar en contenedor FOD.</p><div class="contact-chips"><span class="contact-chip">Rampa: 2375-2281</span></div></div></div>
 
       <div class="form-body">
         <div id="type-indicator" style="display:inline-flex;align-items:center;gap:6px;background:#EEF4FF;padding:5px 12px;border-radius:20px;margin-bottom:14px;font-size:12px;font-weight:600;color:var(--accent2)"></div>
@@ -344,7 +332,43 @@ input[type=file]{display:none}
         <div class="gps-bar loading" id="gps-bar">
           <div class="gps-dot"></div>
           <span class="gps-txt" id="gps-txt">Obteniendo coordenadas...</span>
-          <button class="gps-btn" id="gps-btn" onclick="requestGPS()">Reintentar</button>
+          <button class="gps-btn" onclick="requestGPS()">Reintentar</button>
+        </div>
+
+        <div class="section-hd">Aeronave</div>
+        <div class="row2">
+          <div class="field">
+            <label>Tipo de aeronave</label>
+            <select id="f-aeronave-tipo">
+              <option value="">Seleccionar...</option>
+              <optgroup label="Airbus">
+                <option>A318</option><option>A319</option><option>A320</option><option>A321</option>
+                <option>A220-100</option><option>A220-300</option>
+                <option>A330-200</option><option>A330-300</option>
+                <option>A350-900</option><option>A350-1000</option>
+                <option>A380</option>
+              </optgroup>
+              <optgroup label="Boeing">
+                <option>B737-700</option><option>B737-800</option><option>B737-900</option>
+                <option>B737 MAX 8</option><option>B737 MAX 9</option>
+                <option>B757-200</option><option>B757-300</option>
+                <option>B767-300</option><option>B767-400</option>
+                <option>B777-200</option><option>B777-300</option>
+                <option>B787-8</option><option>B787-9</option><option>B787-10</option>
+              </optgroup>
+              <optgroup label="Embraer">
+                <option>E170</option><option>E175</option><option>E190</option><option>E195</option>
+                <option>E190-E2</option><option>E195-E2</option>
+              </optgroup>
+              <optgroup label="ATR">
+                <option>ATR 42</option><option>ATR 72</option>
+              </optgroup>
+              <optgroup label="Otro">
+                <option>Carguero</option><option>Aviación general</option><option>Otro</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="field"><label>Matrícula / Vuelo</label><input type="text" id="f-operador" placeholder="Ej: N1234 / AV204"></div>
         </div>
 
         <div class="section-hd">Detalles</div>
@@ -355,35 +379,31 @@ input[type=file]{display:none}
             <div class="field"><label>Nombre del infractor</label><input type="text" id="f-infractor" placeholder="Nombre completo"></div>
             <div class="row2">
               <div class="field"><label>Tipo</label>
-                <select id="f-infractor-tipo">
-                  <option value="">Seleccionar...</option>
-                  <option>Conductor de vehículo</option><option>Peatón</option>
-                  <option>Personal de rampa</option><option>Personal externo</option>
-                </select>
+                <select id="f-infractor-tipo"><option value="">Seleccionar...</option><option>Conductor de vehículo</option><option>Peatón</option><option>Personal de rampa</option><option>Personal externo</option></select>
               </div>
               <div class="field"><label>Empresa</label><input type="text" id="f-empresa" placeholder="Handler u operador"></div>
             </div>
             <div class="field">
-              <label>Normativa infringida <span class="art">(artículo NSOAM)</span></label>
+              <label>Normativa infringida <span class="art">(NSOAM)</span></label>
               <select id="f-normativa">
                 <option value="">Seleccionar...</option>
-                <option value="C1-21 — Alcohol o drogas en zona restringida">C1-21 — Alcohol o drogas en zona restringida</option>
+                <option value="C1-21 — Alcohol o drogas en zona restringida">C1-21 — Alcohol o drogas</option>
                 <option value="C1-22 — Fumar / encender fuego">C1-22 — Fumar / encender fuego</option>
-                <option value="C1-23 — Uso de auriculares / celular conduciendo">C1-23 — Uso de auriculares / celular conduciendo</option>
-                <option value="C1-29 — Exceso de velocidad en plataforma (máx. 20 km/h)">C1-29 — Exceso de velocidad en plataforma (máx. 20 km/h)</option>
-                <option value="C1-30 — Velocidad excesiva junto a aeronave (máx. 5 km/h)">C1-30 — Velocidad excesiva junto a aeronave (máx. 5 km/h)</option>
-                <option value="C1-25 — Atravesar puesto de estacionamiento no autorizado">C1-25 — Atravesar puesto de estacionamiento no autorizado</option>
+                <option value="C1-23 — Uso de auriculares / celular conduciendo">C1-23 — Auriculares / celular conduciendo</option>
+                <option value="C1-29 — Exceso de velocidad en plataforma (máx. 20 km/h)">C1-29 — Exceso de velocidad (máx. 20 km/h)</option>
+                <option value="C1-30 — Velocidad excesiva junto a aeronave (máx. 5 km/h)">C1-30 — Velocidad junto a aeronave (máx. 5 km/h)</option>
+                <option value="C1-25 — Atravesar puesto de estacionamiento no autorizado">C1-25 — Atravesar puesto no autorizado</option>
                 <option value="C1-26 — Cruce de plataforma prohibida">C1-26 — Cruce de plataforma prohibida</option>
-                <option value="C1-36 — Cruce peligroso frente a aeronave en movimiento">C1-36 — Cruce peligroso frente a aeronave en movimiento</option>
-                <option value="C1-4 — Sin chaleco reflectante de alta visibilidad">C1-4 — Sin chaleco reflectante de alta visibilidad</option>
-                <option value="C1-2 — Acceso sin acreditación o permiso">C1-2 — Acceso sin acreditación o permiso</option>
-                <option value="C1-58 — Sin baliza anticolisión encendida">C1-58 — Sin baliza anticolisión encendida</option>
-                <option value="F4-3 — Arrojar objetos / desperdicios en área restringida">F4-3 — Arrojar objetos / desperdicios en área restringida</option>
-                <option value="H5-8 — Exceso de pasajeros en tractor (máx. 2)">H5-8 — Exceso de pasajeros en tractor (máx. 2)</option>
-                <option value="H5-11 — Sin cinturón / pararse con vehículo en movimiento">H5-11 — Sin cinturón / pararse con vehículo en movimiento</option>
-                <option value="N11-10 — Sin permiso de conducción del aeropuerto">N11-10 — Sin permiso de conducción del aeropuerto</option>
-                <option value="I6-1 — Acceso a área de maniobras sin autorización ATC">I6-1 — Acceso a área de maniobras sin autorización ATC</option>
-                <option value="C1-10 — No limpiar zona de trabajo tras la operación">C1-10 — No limpiar zona de trabajo tras la operación</option>
+                <option value="C1-36 — Cruce peligroso frente a aeronave en movimiento">C1-36 — Cruce peligroso frente a aeronave</option>
+                <option value="C1-4 — Sin chaleco reflectante de alta visibilidad">C1-4 — Sin chaleco reflectante</option>
+                <option value="C1-2 — Acceso sin acreditación o permiso">C1-2 — Acceso sin acreditación</option>
+                <option value="C1-58 — Sin baliza anticolisión encendida">C1-58 — Sin baliza anticolisión</option>
+                <option value="F4-3 — Arrojar objetos / desperdicios en área restringida">F4-3 — Arrojar objetos / desperdicios</option>
+                <option value="H5-8 — Exceso de pasajeros en tractor (máx. 2)">H5-8 — Exceso de pasajeros en tractor</option>
+                <option value="H5-11 — Sin cinturón / pararse con vehículo en movimiento">H5-11 — Sin cinturón / pararse en movimiento</option>
+                <option value="N11-10 — Sin permiso de conducción del aeropuerto">N11-10 — Sin permiso de conducción</option>
+                <option value="I6-1 — Acceso a área de maniobras sin autorización ATC">I6-1 — Área de maniobras sin autorización</option>
+                <option value="C1-10 — No limpiar zona de trabajo tras la operación">C1-10 — No limpiar zona de trabajo</option>
                 <option value="Otra infracción NSOAM">Otra infracción NSOAM</option>
               </select>
             </div>
@@ -393,19 +413,12 @@ input[type=file]{display:none}
         <div id="fields-derrame" style="display:none">
           <div class="row2">
             <div class="field"><label>Sustancia <span class="art">(C1-57)</span></label>
-              <select id="f-sustancia"><option value="">Seleccionar...</option>
-                <option>Combustible Jet-A1</option><option>Combustible AVGAS</option>
-                <option>Fluido hidráulico</option><option>Aceite de motor</option><option>Otra sustancia</option>
-              </select>
+              <select id="f-sustancia"><option value="">Seleccionar...</option><option>Combustible Jet-A1</option><option>Combustible AVGAS</option><option>Fluido hidráulico</option><option>Aceite de motor</option><option>Otra sustancia</option></select>
             </div>
             <div class="field"><label>Volumen aprox.</label><input type="text" id="f-volumen" placeholder="Ej: 5 litros"></div>
           </div>
-          <div class="field"><label>Aeronave / equipo</label><input type="text" id="f-aeronave-derrame" placeholder="Matrícula o equipo"></div>
           <div class="field"><label>Acción inmediata</label>
-            <select id="f-derrame-accion"><option value="">Seleccionar...</option>
-              <option>SEI notificado y en camino</option><option>Zona acordonada / circulación restringida</option>
-              <option>Vehículos retirados del área</option><option>Operación paralizada por seguridad</option>
-            </select>
+            <select id="f-derrame-accion"><option value="">Seleccionar...</option><option>SEI notificado y en camino</option><option>Zona acordonada</option><option>Vehículos retirados del área</option><option>Operación paralizada por seguridad</option></select>
           </div>
         </div>
 
@@ -413,50 +426,32 @@ input[type=file]{display:none}
           <div class="row2">
             <div class="field"><label>Objeto <span class="art">(F4-7)</span></label><input type="text" id="f-fod-desc" placeholder="Ej: tornillo 3cm"></div>
             <div class="field"><label>Área</label>
-              <select id="f-fod-area"><option value="">Seleccionar...</option>
-                <option>Área de maniobras</option><option>Área de movimiento</option><option>Plataforma</option>
-                <option>Puente de abordaje</option><option>Calle de rodaje</option><option>Pista</option>
-              </select>
+              <select id="f-fod-area"><option value="">Seleccionar...</option><option>Área de maniobras</option><option>Área de movimiento</option><option>Plataforma</option><option>Puente de abordaje</option><option>Calle de rodaje</option><option>Pista</option></select>
             </div>
           </div>
           <div class="field"><label>Estado de remoción</label>
-            <select id="f-fod-removed">
-              <option>Sí, removido inmediatamente</option><option>En proceso de remoción</option><option>Requiere equipo especializado</option>
-            </select>
+            <select id="f-fod-removed"><option>Sí, removido inmediatamente</option><option>En proceso de remoción</option><option>Requiere equipo especializado</option></select>
           </div>
         </div>
 
         <div id="fields-puente" style="display:none">
-          <div class="puente-warn">
-            <strong>NSOAM K8-7 — Prohibido manipular controles</strong>
-            Llamar al Oficial de Rampa: 2375-2281 / 7070-8269. Esperar personal del AIES-SOARG.
-          </div>
+          <div class="puente-warn"><strong>NSOAM K8-7 — Prohibido manipular controles</strong>Llamar: 2375-2281 / 7070-8269. Esperar personal AIES-SOARG.</div>
           <div class="spec-box">
-            <div class="spec-label">Datos del puente — Literal K</div>
+            <div class="spec-label">Datos del puente</div>
             <div class="row2">
               <div class="field"><label>Número de puente <span class="req">*</span></label><input type="text" id="f-puente-num" placeholder="Ej: Puente 4B"></div>
               <div class="field"><label>Posición</label><input type="text" id="f-puente-pos" placeholder="Ej: Pos. 08"></div>
             </div>
             <div class="field"><label>Tipo de falla</label>
-              <select id="f-puente-falla"><option value="">Seleccionar...</option>
-                <option>Falla mecánica — no se mueve</option><option>Falla eléctrica / sin energía</option>
-                <option>Falla hidráulica</option><option>Falla en sistema de nivelación</option>
-                <option>Daño estructural visible</option><option>Falla en puerta de cabina</option>
-                <option>Falla en sistema de control</option><option>Puente acoplado con motores encendidos (K8-11)</option>
-                <option>Otra falla</option>
-              </select>
+              <select id="f-puente-falla"><option value="">Seleccionar...</option><option>Falla mecánica — no se mueve</option><option>Falla eléctrica / sin energía</option><option>Falla hidráulica</option><option>Falla en sistema de nivelación</option><option>Daño estructural visible</option><option>Falla en puerta de cabina</option><option>Falla en sistema de control</option><option>Puente acoplado con motores encendidos (K8-11)</option><option>Otra falla</option></select>
             </div>
             <div class="field"><label>Estado operativo</label>
-              <select id="f-puente-estado">
-                <option>Fuera de servicio</option><option>Operando con restricción</option>
-                <option>En espera de técnico AIES-SOARG</option><option>Reparado / operativo</option>
-              </select>
+              <select id="f-puente-estado"><option>Fuera de servicio</option><option>Operando con restricción</option><option>En espera de técnico AIES-SOARG</option><option>Reparado / operativo</option></select>
             </div>
             <div class="field"><label>Vuelo / aerolínea afectada</label><input type="text" id="f-puente-vuelo" placeholder="Ej: AV204 / Avianca"></div>
           </div>
         </div>
 
-        <div class="field"><label>Aeronave / Operador involucrado</label><input type="text" id="f-operador" placeholder="Matrícula, aerolínea o handler"></div>
         <div class="field">
           <label>Severidad</label>
           <div class="sev-row">
@@ -475,14 +470,18 @@ input[type=file]{display:none}
             <div class="inv-chip" onclick="toggleInv(this)">Conductor externo</div>
           </div>
         </div>
-        <div class="field"><label>Descripción de hechos <span class="req">*</span></label><textarea id="f-desc" placeholder="Describir cronológicamente lo ocurrido, condiciones del área, acciones tomadas..."></textarea></div>
+        <div class="field"><label>Descripción de hechos <span class="req">*</span></label><textarea id="f-desc" placeholder="Describir cronológicamente lo ocurrido..."></textarea></div>
 
         <div class="section-hd">Evidencia fotográfica</div>
         <div class="photo-zone" onclick="document.getElementById('f-photos').click()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <p>Tomar o subir foto</p>
+          <p>Tomar o subir foto(s)</p>
         </div>
         <input type="file" id="f-photos" accept="image/*" capture="environment" multiple onchange="addPhotos(this)">
+        <div class="upload-progress" id="upload-progress">
+          <div class="progress-txt" id="progress-txt">Subiendo fotos...</div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
         <div class="photo-row" id="photo-row"></div>
 
         <div class="section-hd">Responsable y tiempo</div>
@@ -500,8 +499,7 @@ input[type=file]{display:none}
         </div>
         <div class="field"><label>Testigos (opcional)</label><input type="text" id="f-testigos" placeholder="Nombres separados por coma"></div>
         <button class="btn-submit" id="btn-submit" onclick="submitReport()">
-          <div class="spinner"></div>
-          <span id="btn-txt">Registrar incidente</span>
+          <div class="spinner"></div><span id="btn-txt">Registrar incidente</span>
         </button>
       </div>
     </div>
@@ -512,10 +510,26 @@ input[type=file]{display:none}
     <div class="page-pad">
       <div class="section-hd">Resumen general</div>
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-lbl">Total incidentes</div><div class="stat-val" id="st-total">0</div></div>
+        <div class="stat-card"><div class="stat-lbl">Total</div><div class="stat-val" id="st-total">0</div></div>
         <div class="stat-card"><div class="stat-lbl">Alta severidad</div><div class="stat-val r" id="st-alta">0</div></div>
         <div class="stat-card"><div class="stat-lbl">Accidentes</div><div class="stat-val r" id="st-acc">0</div></div>
         <div class="stat-card"><div class="stat-lbl">Esta semana</div><div class="stat-val a" id="st-sem">0</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Incidentes por tipo</div>
+        <div class="chart-wrap"><canvas id="chart-tipos"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Incidentes por severidad</div>
+        <div class="chart-wrap"><canvas id="chart-sev"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Incidentes por turno</div>
+        <div class="chart-wrap"><canvas id="chart-turno"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Últimos 6 meses</div>
+        <div class="chart-wrap"><canvas id="chart-mes"></canvas></div>
       </div>
       <div class="section-hd">Filtrar reportes</div>
       <div class="chips-bar">
@@ -536,7 +550,6 @@ input[type=file]{display:none}
   <!-- SANCIONES -->
   <div class="view" id="view-sanciones">
     <div class="page-pad">
-      <div class="section-hd">Sanciones registradas</div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-lbl">Total sanciones</div><div class="stat-val" id="ss-total">0</div></div>
         <div class="stat-card"><div class="stat-lbl">Este mes</div><div class="stat-val a" id="ss-mes">0</div></div>
@@ -545,13 +558,12 @@ input[type=file]{display:none}
     </div>
   </div>
 
-  <!-- DERRAMES / FOD -->
+  <!-- DERRAMES/FOD -->
   <div class="view" id="view-derrames">
     <div class="page-pad">
-      <div class="section-hd">Derrames y FOD</div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-lbl">Derrames (C1-57)</div><div class="stat-val r" id="sd-total">0</div></div>
-        <div class="stat-card"><div class="stat-lbl">FOD detectado (F4-7)</div><div class="stat-val a" id="sf-total">0</div></div>
+        <div class="stat-card"><div class="stat-lbl">FOD (F4-7)</div><div class="stat-val a" id="sf-total">0</div></div>
       </div>
       <div id="dlist"></div>
     </div>
@@ -561,63 +573,33 @@ input[type=file]{display:none}
   <div class="view" id="view-protocolos">
     <div class="page-pad">
       <div class="section-hd">Protocolos de respuesta — NSOAM</div>
-      <div class="emer-card red">
-        <div class="emer-card-title">Derrame de combustible / hidráulico</div>
-        <div class="emer-card-art">Art. C1-57 NSOAM</div>
-        <ul class="emer-steps">
-          <li>Informar inmediatamente a SEI y Centro de Coordinación de Oficiales de Rampa</li>
-          <li>No pasar vehículos sobre el combustible derramado</li>
-          <li>Vehículo encendido en zona: retirarlo con motor encendido</li>
-          <li>Vehículo apagado: empujarlo o remolcarlo fuera del área</li>
-          <li>Acordonar la zona y restringir circulación</li>
-        </ul>
-        <div class="emer-tel">
-          <a href="tel:23752300">SEI: 2375-2300</a>
-          <a href="tel:23752281">Coord. Rampa: 2375-2281</a>
-          <a href="tel:70708269">Rampa: 7070-8269</a>
-          <a href="tel:70708074">Jefatura: 7070-8074</a>
+      <div class="emer-card red"><div class="emer-card-title">Derrame de combustible / hidráulico</div><div class="emer-card-art">Art. C1-57</div><ul class="emer-steps"><li>Informar inmediatamente a SEI y Centro de Coordinación de Oficiales de Rampa</li><li>No pasar vehículos sobre el combustible derramado</li><li>Vehículo encendido: retirarlo con motor encendido</li><li>Vehículo apagado: empujarlo o remolcarlo fuera del área</li><li>Acordonar la zona y restringir circulación</li></ul><div class="emer-tel"><a href="tel:23752300">SEI: 2375-2300</a><a href="tel:23752281">Rampa: 2375-2281</a><a href="tel:70708269">7070-8269</a><a href="tel:70708074">Jefatura: 7070-8074</a></div></div>
+      <div class="emer-card amber"><div class="emer-card-title">Accidente / Daño material</div><div class="emer-card-art">Art. J7-1 a J7-6</div><ul class="emer-steps"><li>Comunicar al Centro de Coordinación de Oficiales de Rampa</li><li>Involucrados deben permanecer en el lugar</li><li>No mover vehículos hasta llegada de Oficiales y PNC</li><li>Reportar lesionados, derrame, incendio u otra circunstancia</li></ul><div class="emer-tel"><a href="tel:23752281">Rampa: 2375-2281</a><a href="tel:70708074">Jefatura: 7070-8074</a></div></div>
+      <div class="emer-card blue"><div class="emer-card-title">Falla de puente de abordaje</div><div class="emer-card-art">Art. K8-7</div><ul class="emer-steps"><li>Llamar al Oficial de Rampa inmediatamente</li><li>PROHIBIDO manipular controles hasta llegada de personal</li><li>Verificar que aeronave no tenga motores encendidos con puente acoplado (K8-11)</li></ul><div class="emer-tel"><a href="tel:23752281">2375-2281</a><a href="tel:70708269">7070-8269</a></div></div>
+      <div class="emer-card green"><div class="emer-card-title">FOD — Objeto foráneo</div><div class="emer-card-art">Art. F4-7, C1-37, J7-7</div><ul class="emer-steps"><li>Todo personal obligado a colaborar</li><li>Remover inmediatamente y depositar en contenedor FOD</li><li>Bulto abandonado: comunicar a Seguridad</li><li>Mercancía peligrosa: distancia y llamar a SEI</li></ul><div class="emer-tel"><a href="tel:23752281">Rampa: 2375-2281</a><a href="tel:23752300">SEI: 2375-2300</a></div></div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="view" id="view-admin">
+    <div class="page-pad">
+      <div class="section-hd">Panel de administración</div>
+      <div class="admin-section">
+        <div class="admin-section-hd"><span class="crown">👑</span> Usuarios del sistema</div>
+        <div id="users-list"><div style="padding:14px 16px;font-size:13px;color:var(--muted)">Cargando usuarios...</div></div>
+        <div class="add-user-form">
+          <div class="section-hd" style="margin-top:0">Agregar nuevo usuario</div>
+          <div class="add-user-row">
+            <div class="field" style="margin:0"><label style="margin-bottom:4px">Correo</label><input type="email" id="new-user-email" placeholder="usuario@aeropuerto.gob.sv"></div>
+            <div class="field" style="margin:0"><label style="margin-bottom:4px">Contraseña</label><input type="password" id="new-user-pass" placeholder="Mínimo 6 caracteres"></div>
+            <button class="btn-add-user" onclick="createUser()">Agregar</button>
+          </div>
         </div>
       </div>
-      <div class="emer-card amber">
-        <div class="emer-card-title">Accidente / Daño material</div>
-        <div class="emer-card-art">Art. J7-1 a J7-6 NSOAM</div>
-        <ul class="emer-steps">
-          <li>Comunicar inmediatamente al Centro de Coordinación de Oficiales de Rampa</li>
-          <li>Involucrados deben permanecer en el lugar del accidente</li>
-          <li>No mover vehículos hasta llegada de Oficiales de Rampa y PNC</li>
-          <li>Reportar lesionados, derrame, incendio u otra circunstancia relevante</li>
-        </ul>
-        <div class="emer-tel">
-          <a href="tel:23752281">Coord. Rampa: 2375-2281</a>
-          <a href="tel:70708269">Rampa: 7070-8269</a>
-          <a href="tel:70708074">Jefatura: 7070-8074</a>
-        </div>
-      </div>
-      <div class="emer-card blue">
-        <div class="emer-card-title">Falla de puente de abordaje</div>
-        <div class="emer-card-art">Art. K8-7 NSOAM</div>
-        <ul class="emer-steps">
-          <li>Llamar al Oficial de Rampa inmediatamente</li>
-          <li>PROHIBIDO manipular controles hasta llegada de personal AIES-SOARG</li>
-          <li>Verificar que aeronave no tenga motores encendidos con puente acoplado (K8-11)</li>
-        </ul>
-        <div class="emer-tel">
-          <a href="tel:23752281">Rampa: 2375-2281</a>
-          <a href="tel:70708269">7070-8269</a>
-        </div>
-      </div>
-      <div class="emer-card green">
-        <div class="emer-card-title">FOD — Objeto foráneo detectado</div>
-        <div class="emer-card-art">Art. F4-7, C1-37, J7-7 NSOAM</div>
-        <ul class="emer-steps">
-          <li>Todo personal obligado a colaborar con control del FOD</li>
-          <li>Remover inmediatamente y depositar en contenedor FOD</li>
-          <li>Bulto abandonado: comunicar al Centro de Operaciones de Seguridad</li>
-          <li>Mercancía peligrosa: mantenerse a distancia y llamar a SEI</li>
-        </ul>
-        <div class="emer-tel">
-          <a href="tel:23752281">Rampa: 2375-2281</a>
-          <a href="tel:23752300">SEI: 2375-2300</a>
+      <div class="admin-section">
+        <div class="admin-section-hd">📊 Todos los reportes</div>
+        <div style="padding:14px 16px">
+          <div id="admin-rlist"></div>
         </div>
       </div>
     </div>
@@ -629,13 +611,39 @@ input[type=file]{display:none}
   <div class="sheet"><div class="handle"></div><div id="detail-content"></div></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- EDIT OVERLAY -->
+<div class="edit-overlay" id="edit-overlay">
+  <div class="edit-card">
+    <div class="edit-title">Editar reporte</div>
+    <div class="field"><label>Descripción</label><textarea id="edit-desc" style="min-height:100px"></textarea></div>
+    <div class="field"><label>Severidad</label>
+      <select id="edit-sev"><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select>
+    </div>
+    <div class="field"><label>Oficial de turno</label><input type="text" id="edit-oficial"></div>
+    <div class="field"><label>Operador / Matrícula</label><input type="text" id="edit-operador"></div>
+    <div class="edit-actions">
+      <button class="btn-cancel" onclick="closeEdit()">Cancelar</button>
+      <button class="btn-save" onclick="saveEdit()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
 
-<!-- FIREBASE -->
+<!-- PHOTO FULLSCREEN -->
+<div class="photo-fullscreen" id="photo-fullscreen" onclick="closeFullscreen()">
+  <div class="photo-fullscreen-close">✕</div>
+  <img id="photo-fullscreen-img" src="" alt="">
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="f-photos" accept="image/*" capture="environment" multiple onchange="addPhotos(this)" style="display:none">
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const ADMIN_EMAIL = "jordanherrera3max@gmail.com";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA5dK7AmIUM-gEC0_BWJhvyJcVaUo3kjpk",
@@ -646,85 +654,97 @@ const firebaseConfig = {
   appId: "1:349522521039:web:a76471ac3776eed1d4c0ba"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+const storage = getStorage(fbApp);
 
 const TYPE_LABELS={accidente:'Accidente / Colisión',incidente:'Incidente operativo',sancion:'Sanción conductor / peatón',derrame:'Derrame combustible / hidráulico',fod:'FOD — Objeto foráneo',puente:'Falla de puente de abordaje'};
 
-let reports=[], selType='', selSev='', selTurno='', photos=[], invs=[], filt='todos', currentUser=null;
+let reports=[], selType='', selSev='', selTurno='', photoFiles=[], photoURLs=[], invs=[], filt='todos', currentUser=null, isAdmin=false, editingId=null;
+let charts={};
 
-// AUTH STATE
-onAuthStateChanged(auth, user => {
+// AUTH
+onAuthStateChanged(auth, user=>{
   document.getElementById('loading-screen').classList.add('hide');
   if(user){
-    currentUser = user;
+    currentUser=user;
+    isAdmin = user.email===ADMIN_EMAIL;
     document.getElementById('auth-wrap').style.display='none';
     document.getElementById('app').classList.add('visible');
+    if(isAdmin){
+      document.getElementById('admin-badge-top').style.display='inline-block';
+      const tb=document.getElementById('tab-bar');
+      if(!document.getElementById('tab-admin')){
+        const t=document.createElement('div');
+        t.className='tab admin-tab'; t.id='tab-admin';
+        t.textContent='Admin ★'; t.onclick=()=>goTab('admin');
+        tb.appendChild(t);
+      }
+    }
     subscribeReports();
     requestGPS();
   } else {
-    currentUser = null;
+    currentUser=null; isAdmin=false;
     document.getElementById('auth-wrap').style.display='flex';
     document.getElementById('app').classList.remove('visible');
   }
 });
 
-// LOGIN
-window.doLogin = async function(){
-  const email = document.getElementById('auth-email').value.trim();
-  const pass = document.getElementById('auth-pass').value;
-  const btn = document.getElementById('auth-btn');
-  const err = document.getElementById('auth-err');
+window.doLogin=async()=>{
+  const email=document.getElementById('auth-email').value.trim();
+  const pass=document.getElementById('auth-pass').value;
+  const btn=document.getElementById('auth-btn');
+  const err=document.getElementById('auth-err');
   err.classList.remove('show');
   if(!email||!pass){err.textContent='Completa todos los campos.';err.classList.add('show');return;}
-  btn.disabled=true; btn.textContent='Ingresando...';
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch(e) {
-    err.textContent = e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found'
-      ? 'Correo o contraseña incorrectos.' : 'Error al ingresar. Intenta de nuevo.';
-    err.classList.add('show');
-    btn.disabled=false; btn.textContent='Ingresar';
-  }
+  btn.disabled=true;btn.textContent='Ingresando...';
+  try{await signInWithEmailAndPassword(auth,email,pass);}
+  catch(e){err.textContent=e.code.includes('credential')||e.code.includes('password')||e.code.includes('user-not-found')?'Correo o contraseña incorrectos.':'Error al ingresar.';err.classList.add('show');btn.disabled=false;btn.textContent='Ingresar';}
 };
+window.doLogout=()=>signOut(auth);
+document.getElementById('auth-pass').addEventListener('keydown',e=>{if(e.key==='Enter')window.doLogin();});
 
-// LOGOUT
-window.doLogout = async function(){
-  await signOut(auth);
-};
-
-// ENTER KEY LOGIN
-document.getElementById('auth-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') window.doLogin(); });
-
-// SUBSCRIBE FIRESTORE
+// FIRESTORE
 function subscribeReports(){
-  const q = query(collection(db,'incidentes'), orderBy('createdAt','desc'));
-  onSnapshot(q, snap => {
-    reports = snap.docs.map(d=>({id:d.id,...d.data()}));
-    updateBadge(); updateTypeCounts();
-    const activeTab = document.querySelector('.tab.active');
-    if(activeTab){
-      const t = ['nuevo','dashboard','sanciones','derrames','protocolos'][Array.from(document.querySelectorAll('.tab')).indexOf(activeTab)];
-      if(t==='dashboard') renderDash();
-      if(t==='sanciones') renderSanciones();
-      if(t==='derrames') renderDerrames();
-    }
+  const q=query(collection(db,'incidentes'),orderBy('createdAt','desc'));
+  onSnapshot(q,snap=>{
+    reports=snap.docs.map(d=>({id:d.id,...d.data()}));
+    updateBadge();updateTypeCounts();
+    const active=document.querySelector('.tab.active');
+    if(active){const tabs=['nuevo','dashboard','sanciones','derrames','protocolos','admin'];const idx=Array.from(document.querySelectorAll('.tab')).indexOf(active);const t=tabs[idx];if(t==='dashboard')renderDash();if(t==='sanciones')renderSanciones();if(t==='derrames')renderDerrames();if(t==='admin')renderAdmin();}
     document.getElementById('sync-dot').className='sync-dot';
-  }, err=>{
-    document.getElementById('sync-dot').className='sync-dot offline';
-  });
+  },()=>{document.getElementById('sync-dot').className='sync-dot offline';});
 }
 
 // SUBMIT
-window.submitReport = async function(){
+window.submitReport=async()=>{
   const pos=document.getElementById('f-pos').value.trim();
   const desc=document.getElementById('f-desc').value.trim();
   const oficial=document.getElementById('f-oficial').value.trim();
   if(!pos||!desc||!oficial||!selType){showToast('Completa los campos obligatorios');return;}
   const btn=document.getElementById('btn-submit');
-  btn.disabled=true; btn.classList.add('loading');
+  btn.disabled=true;btn.classList.add('loading');
   document.getElementById('btn-txt').textContent='Guardando...';
+
+  // Upload photos
+  let uploadedURLs=[];
+  if(photoFiles.length>0){
+    document.getElementById('upload-progress').classList.add('show');
+    for(let i=0;i<photoFiles.length;i++){
+      const f=photoFiles[i];
+      const name=`incidentes/${Date.now()}_${i}_${f.name}`;
+      const storageRef=ref(storage,name);
+      await uploadBytes(storageRef,f);
+      const url=await getDownloadURL(storageRef);
+      uploadedURLs.push(url);
+      const pct=Math.round(((i+1)/photoFiles.length)*100);
+      document.getElementById('progress-fill').style.width=pct+'%';
+      document.getElementById('progress-txt').textContent=`Subiendo fotos... ${pct}%`;
+    }
+    document.getElementById('upload-progress').classList.remove('show');
+  }
+
   const turnoLabel=selTurno?`Turno ${selTurno} (${selTurno==='Alfa'?'06:00–14:00':selTurno==='Bravo'?'14:00–22:00':'22:00–06:00'})`:'';
   const r={
     tipo:selType, severidad:selSev||'baja',
@@ -732,172 +752,289 @@ window.submitReport = async function(){
     hora:new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'}),
     hora_suceso:document.getElementById('f-hora-suceso').value||'No especificada',
     posicion:pos, zona:document.getElementById('f-zona').value,
+    aeronave_tipo:document.getElementById('f-aeronave-tipo').value,
     operador:document.getElementById('f-operador').value,
     descripcion:desc, oficial, turno:turnoLabel,
     testigos:document.getElementById('f-testigos').value,
     gps:document.getElementById('gps-txt').textContent,
-    fotos:photos.length, involucrados:invs.join(', '),
-    registradoPor: currentUser?.email||'',
-    createdAt: serverTimestamp()
+    fotos:uploadedURLs.length, fotoURLs:uploadedURLs,
+    involucrados:invs.join(', '),
+    registradoPor:currentUser?.email||'',
+    createdAt:serverTimestamp()
   };
   if(selType==='sancion'){r.infractor=document.getElementById('f-infractor').value;r.infractor_tipo=document.getElementById('f-infractor-tipo').value;r.empresa=document.getElementById('f-empresa').value;r.normativa=document.getElementById('f-normativa').value;}
-  if(selType==='derrame'){r.sustancia=document.getElementById('f-sustancia').value;r.volumen=document.getElementById('f-volumen').value;r.aeronave=document.getElementById('f-aeronave-derrame').value;r.derrame_accion=document.getElementById('f-derrame-accion').value;}
+  if(selType==='derrame'){r.sustancia=document.getElementById('f-sustancia').value;r.volumen=document.getElementById('f-volumen').value;r.derrame_accion=document.getElementById('f-derrame-accion').value;}
   if(selType==='fod'){r.fod_desc=document.getElementById('f-fod-desc').value;r.fod_area=document.getElementById('f-fod-area').value;r.fod_removed=document.getElementById('f-fod-removed').value;}
   if(selType==='puente'){r.puente_num=document.getElementById('f-puente-num').value;r.puente_pos=document.getElementById('f-puente-pos').value;r.puente_falla=document.getElementById('f-puente-falla').value;r.puente_estado=document.getElementById('f-puente-estado').value;r.puente_vuelo=document.getElementById('f-puente-vuelo').value;}
-  try {
-    await addDoc(collection(db,'incidentes'), r);
-    resetForm(); backToTypes();
-    showToast('Incidente registrado en la base de datos');
-  } catch(e){
-    showToast('Error al guardar. Verifica tu conexión.');
-  }
-  btn.disabled=false; btn.classList.remove('loading');
+
+  try{
+    await addDoc(collection(db,'incidentes'),r);
+    resetForm();backToTypes();showToast('Incidente registrado correctamente');
+  }catch(e){showToast('Error al guardar. Verifica tu conexión.');}
+  btn.disabled=false;btn.classList.remove('loading');
   document.getElementById('btn-txt').textContent='Registrar incidente';
 };
 
-// RENDER
-window.renderDash = function(){
-  const total=reports.length, alta=reports.filter(r=>r.severidad==='alta').length, acc=reports.filter(r=>r.tipo==='accidente').length;
+// EDIT / DELETE
+window.openEdit=function(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
+  editingId=id;
+  document.getElementById('edit-desc').value=r.descripcion||'';
+  document.getElementById('edit-sev').value=r.severidad||'baja';
+  document.getElementById('edit-oficial').value=r.oficial||'';
+  document.getElementById('edit-operador').value=r.operador||'';
+  document.getElementById('edit-overlay').classList.add('open');
+};
+window.closeEdit=()=>{document.getElementById('edit-overlay').classList.remove('open');editingId=null;};
+window.saveEdit=async()=>{
+  if(!editingId)return;
+  await updateDoc(doc(db,'incidentes',editingId),{
+    descripcion:document.getElementById('edit-desc').value,
+    severidad:document.getElementById('edit-sev').value,
+    oficial:document.getElementById('edit-oficial').value,
+    operador:document.getElementById('edit-operador').value,
+  });
+  closeEdit();
+  document.getElementById('overlay').classList.remove('open');
+  showToast('Reporte actualizado');
+};
+window.deleteReport=async(id)=>{
+  if(!confirm('¿Eliminar este reporte permanentemente?'))return;
+  await deleteDoc(doc(db,'incidentes',id));
+  document.getElementById('overlay').classList.remove('open');
+  showToast('Reporte eliminado');
+};
+
+// ADMIN — create user via REST API
+window.createUser=async()=>{
+  const email=document.getElementById('new-user-email').value.trim();
+  const pass=document.getElementById('new-user-pass').value;
+  if(!email||!pass){showToast('Completa correo y contraseña');return;}
+  if(pass.length<6){showToast('La contraseña debe tener al menos 6 caracteres');return;}
+  try{
+    const secondary=initializeApp(firebaseConfig,'secondary');
+    const secAuth=getAuth(secondary);
+    await createUserWithEmailAndPassword(secAuth,email,pass);
+    await signOut(secAuth);
+    document.getElementById('new-user-email').value='';
+    document.getElementById('new-user-pass').value='';
+    showToast('Usuario creado: '+email);
+    renderAdmin();
+  }catch(e){
+    showToast(e.code==='auth/email-already-in-use'?'Este correo ya existe':'Error: '+e.message);
+  }
+};
+
+function renderAdmin(){
+  document.getElementById('admin-rlist').innerHTML='';
+  renderList(document.getElementById('admin-rlist'),reports,true);
+  document.getElementById('users-list').innerHTML=`<div style="padding:12px 16px;font-size:12px;color:var(--muted)">Los usuarios se gestionan desde Firebase Console → Authentication → Usuarios.<br>Usa el formulario de abajo para crear nuevos usuarios directamente.</div>`;
+}
+
+// CHARTS
+function renderCharts(){
+  const tipos=['accidente','incidente','sancion','derrame','fod','puente'];
+  const tipoLabels=['Accidente','Incidente','Sanción','Derrame','FOD','Puente'];
+  const tipoCounts=tipos.map(t=>reports.filter(r=>r.tipo===t).length);
+
+  const sevCounts=[reports.filter(r=>r.severidad==='baja').length,reports.filter(r=>r.severidad==='media').length,reports.filter(r=>r.severidad==='alta').length];
+
+  const turnoCounts=['Alfa','Bravo','Charlie'].map(t=>reports.filter(r=>r.turno&&r.turno.includes(t)).length);
+
+  const now=new Date();
+  const meses=[];const mesCounts=[];
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);meses.push(d.toLocaleDateString('es-SV',{month:'short',year:'2-digit'}));const m=d.getMonth(),y=d.getFullYear();mesCounts.push(reports.filter(r=>{try{const p=r.fecha.split('/');const rd=new Date(p[2],p[1]-1,p[0]);return rd.getMonth()===m&&rd.getFullYear()===y;}catch{return false;}}).length);}
+
+  const chartDefaults={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:12}}}};
+
+  if(charts.tipos) charts.tipos.destroy();
+  charts.tipos=new Chart(document.getElementById('chart-tipos'),{type:'bar',data:{labels:tipoLabels,datasets:[{data:tipoCounts,backgroundColor:['#FCEBEB','#FAEEDA','#EEF4FF','#FEF3C7','#EAF3DE','#E6F1FB'],borderColor:['#F09595','#FAC775','#93C5FD','#FCD34D','#97C459','#85B7EB'],borderWidth:1.5,borderRadius:6}]},options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}}}}}});
+
+  if(charts.sev) charts.sev.destroy();
+  charts.sev=new Chart(document.getElementById('chart-sev'),{type:'doughnut',data:{labels:['Baja','Media','Alta'],datasets:[{data:sevCounts,backgroundColor:['#EAF3DE','#FAEEDA','#FCEBEB'],borderColor:['#97C459','#FAC775','#F09595'],borderWidth:2}]},options:chartDefaults});
+
+  if(charts.turno) charts.turno.destroy();
+  charts.turno=new Chart(document.getElementById('chart-turno'),{type:'pie',data:{labels:['Alfa 06-14','Bravo 14-22','Charlie 22-06'],datasets:[{data:turnoCounts,backgroundColor:['#E6F1FB','#EAF3DE','#FAEEDA'],borderColor:['#85B7EB','#97C459','#FAC775'],borderWidth:2}]},options:chartDefaults});
+
+  if(charts.mes) charts.mes.destroy();
+  charts.mes=new Chart(document.getElementById('chart-mes'),{type:'line',data:{labels:meses,datasets:[{label:'Incidentes',data:mesCounts,borderColor:'#2E6BE6',backgroundColor:'rgba(46,107,230,0.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#2E6BE6',fill:true,tension:0.3}]},options:{...chartDefaults,scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}}}}}});
+}
+
+// RENDER DASH
+window.renderDash=function(){
+  const total=reports.length,alta=reports.filter(r=>r.severidad==='alta').length,acc=reports.filter(r=>r.tipo==='accidente').length;
   const sem=reports.filter(r=>{try{const p=r.fecha.split('/');return(new Date()-new Date(p[2],p[1]-1,p[0]))<7*86400000;}catch{return false;}}).length;
-  document.getElementById('st-total').textContent=total;
-  document.getElementById('st-alta').textContent=alta;
-  document.getElementById('st-acc').textContent=acc;
-  document.getElementById('st-sem').textContent=sem;
+  document.getElementById('st-total').textContent=total;document.getElementById('st-alta').textContent=alta;document.getElementById('st-acc').textContent=acc;document.getElementById('st-sem').textContent=sem;
+  renderCharts();
   const hoy=new Date().toLocaleDateString('es-SV');
   let filtered=reports;
   if(filt==='alta')filtered=reports.filter(r=>r.severidad==='alta');
   else if(filt==='hoy')filtered=reports.filter(r=>r.fecha===hoy);
   else if(['accidente','incidente','sancion','derrame','fod','puente'].includes(filt))filtered=reports.filter(r=>r.tipo===filt);
-  renderList(document.getElementById('rlist'),filtered);
+  renderList(document.getElementById('rlist'),filtered,false);
 };
 
-window.renderSanciones = function(){
+window.renderSanciones=function(){
   const san=reports.filter(r=>r.tipo==='sancion');
   const mes=new Date().getMonth();
   document.getElementById('ss-total').textContent=san.length;
   document.getElementById('ss-mes').textContent=san.filter(r=>{try{const p=r.fecha.split('/');return new Date(p[2],p[1]-1,p[0]).getMonth()===mes;}catch{return false;}}).length;
-  renderList(document.getElementById('slist'),san);
+  renderList(document.getElementById('slist'),san,false);
 };
 
-window.renderDerrames = function(){
-  const der=reports.filter(r=>r.tipo==='derrame'), fod=reports.filter(r=>r.tipo==='fod');
-  document.getElementById('sd-total').textContent=der.length;
-  document.getElementById('sf-total').textContent=fod.length;
-  renderList(document.getElementById('dlist'),[...der,...fod]);
+window.renderDerrames=function(){
+  const der=reports.filter(r=>r.tipo==='derrame'),fod=reports.filter(r=>r.tipo==='fod');
+  document.getElementById('sd-total').textContent=der.length;document.getElementById('sf-total').textContent=fod.length;
+  renderList(document.getElementById('dlist'),[...der,...fod],false);
 };
 
-function renderList(container,list){
-  if(!list.length){container.innerHTML=`<div class="empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Sin registros.</p></div>`;return;}
+function renderList(container,list,showAdmin){
+  if(!list.length){container.innerHTML=`<div class="empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg><p>Sin registros.</p></div>`;return;}
   container.innerHTML=list.map(r=>{
     const art=r.normativa?r.normativa.split('—')[0].trim():'';
+    const hasPhotos=r.fotoURLs&&r.fotoURLs.length>0;
     return`<div class="rcard" onclick="openDetail('${r.id}')">
-      <div class="rcard-top"><span class="rcard-id">${r.id||''} · ${r.fecha||''} ${r.hora||''}</span><span class="rbadge rb-${r.severidad||'baja'}">${(r.severidad||'baja').charAt(0).toUpperCase()+(r.severidad||'baja').slice(1)}</span></div>
+      <div class="rcard-top"><span class="rcard-id">${r.fecha||''} ${r.hora||''}</span><span class="rbadge rb-${r.severidad||'baja'}">${(r.severidad||'baja').charAt(0).toUpperCase()+(r.severidad||'baja').slice(1)}</span></div>
       <div style="margin-bottom:6px"><span class="rtype-badge">${TYPE_LABELS[r.tipo]||r.tipo}</span>${art?`<span class="rart-badge">${art}</span>`:''}</div>
       <div class="rcard-desc">${r.descripcion||''}</div>
-      <div class="rcard-meta"><span>${r.posicion||''}</span>${r.operador?`<span>${r.operador}</span>`:''}<span>${r.oficial||''}</span>${r.fotos?`<span>${r.fotos} foto${r.fotos>1?'s':''}</span>`:''}<span style="color:#94A3B8">${r.registradoPor||''}</span></div>
+      <div class="rcard-meta">
+        <span>${r.posicion||''}</span>
+        ${r.aeronave_tipo?`<span>✈️ ${r.aeronave_tipo}</span>`:''}
+        ${r.operador?`<span>${r.operador}</span>`:''}
+        <span>${r.oficial||''}</span>
+        ${hasPhotos?`<span>📷 ${r.fotoURLs.length} foto${r.fotoURLs.length>1?'s':''}</span>`:''}
+      </div>
     </div>`;}).join('');
 }
 
-window.openDetail = function(id){
-  const r=reports.find(x=>x.id===id); if(!r)return;
+window.openDetail=function(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
   const artRef=r.normativa?r.normativa.split('—')[0].trim():'';
+  const hasPhotos=r.fotoURLs&&r.fotoURLs.length>0;
   const rows=[
     ['Tipo',TYPE_LABELS[r.tipo]||r.tipo],['Severidad',r.severidad],
-    ['Fecha de registro',`${r.fecha} ${r.hora}`],['Hora aprox. del suceso',r.hora_suceso],
+    ['Fecha',`${r.fecha} ${r.hora}`],['Hora suceso',r.hora_suceso],
     ['Turno',r.turno],['Posición',r.posicion],['Zona',r.zona],
-    ['Operador',r.operador],['Oficial',r.oficial],['Involucrados',r.involucrados],
-    ['Testigos',r.testigos],['GPS',r.gps],['Fotos',r.fotos],
+    r.aeronave_tipo?['Tipo aeronave',r.aeronave_tipo]:null,
+    ['Matrícula/Vuelo',r.operador],['Oficial',r.oficial],
+    ['Involucrados',r.involucrados],['Testigos',r.testigos],['GPS',r.gps],
     ['Registrado por',r.registradoPor],
     r.infractor?['Infractor',r.infractor]:null,
     r.infractor_tipo?['Tipo infractor',r.infractor_tipo]:null,
     r.empresa?['Empresa',r.empresa]:null,
-    r.normativa?['Normativa infringida',r.normativa]:null,
-    r.sustancia?['Sustancia (C1-57)',r.sustancia]:null,
+    r.normativa?['Normativa',r.normativa]:null,
+    r.sustancia?['Sustancia',r.sustancia]:null,
     r.volumen?['Volumen',r.volumen]:null,
     r.derrame_accion?['Acción inmediata',r.derrame_accion]:null,
     r.fod_desc?['Objeto FOD',r.fod_desc]:null,
     r.fod_area?['Área FOD',r.fod_area]:null,
     r.fod_removed?['Remoción',r.fod_removed]:null,
     r.puente_num?['Puente',r.puente_num]:null,
-    r.puente_falla?['Tipo de falla',r.puente_falla]:null,
+    r.puente_falla?['Falla',r.puente_falla]:null,
     r.puente_estado?['Estado',r.puente_estado]:null,
     r.puente_vuelo?['Vuelo afectado',r.puente_vuelo]:null,
   ].filter(x=>x&&x[1]);
+
+  const adminActions=isAdmin?`<div class="d-actions"><button class="btn-edit" onclick="openEdit('${r.id}')">Editar</button><button class="btn-delete" onclick="deleteReport('${r.id}')">Eliminar</button></div>`:'';
+
   document.getElementById('detail-content').innerHTML=`
-    <div class="d-title">${r.id||'Reporte'}</div>
+    <div class="d-title">${TYPE_LABELS[r.tipo]||r.tipo}</div>
     ${artRef?`<div class="d-art">Ref. NSOAM: ${artRef}</div>`:''}
-    <div style="margin-bottom:10px"><span class="rbadge rb-${r.severidad}" style="display:inline-block">${r.severidad}</span> <span class="rtype-badge" style="margin-left:6px">${TYPE_LABELS[r.tipo]||r.tipo}</span></div>
+    <div style="margin-bottom:10px"><span class="rbadge rb-${r.severidad}" style="display:inline-block">${r.severidad}</span></div>
     <div class="d-desc-box">${r.descripcion}</div>
+    ${hasPhotos?`<div class="section-hd" style="margin-top:14px">Evidencia fotográfica</div><div class="photo-grid">${r.fotoURLs.map(url=>`<img src="${url}" onclick="openFullscreen('${url}')" alt="foto">`).join('')}</div>`:''}
     ${rows.map(([k,v])=>`<div class="d-row"><span class="d-k">${k}</span><span class="d-v">${v}</span></div>`).join('')}
+    ${adminActions}
     <button class="btn-exp" onclick="exportTxt('${r.id}')">Exportar reporte (.txt)</button>
   `;
   document.getElementById('overlay').classList.add('open');
 };
 
-window.exportTxt = function(id){
-  const r=reports.find(x=>x.id===id); if(!r)return;
-  const lines=['REPORTE DE INCIDENTE — AIES-SOARG','NSOAM Edición 001/2024','===========================================',`ID: ${r.id}`,`Tipo: ${TYPE_LABELS[r.tipo]||r.tipo}`,`Severidad: ${r.severidad?.toUpperCase()}`,`Fecha: ${r.fecha} ${r.hora}`,`Hora aprox. suceso: ${r.hora_suceso}`,`${r.turno||''}`,`Registrado por: ${r.registradoPor||''}`,``,`UBICACIÓN`,`Posición: ${r.posicion}`,`Zona: ${r.zona||'N/A'}`,`GPS: ${r.gps}`,``,`DESCRIPCIÓN`,r.descripcion,``,`PARTES INVOLUCRADAS`,`Operador: ${r.operador||'N/A'}`,`Involucrados: ${r.involucrados||'N/A'}`,`Testigos: ${r.testigos||'N/A'}`,r.normativa?`\nINFRACCIÓN NSOAM\nInfractor: ${r.infractor||'N/A'}\nTipo: ${r.infractor_tipo||'N/A'}\nEmpresa: ${r.empresa||'N/A'}\nNormativa: ${r.normativa}`:'',r.sustancia?`\nDERRAME (C1-57)\nSustancia: ${r.sustancia}\nVolumen: ${r.volumen||'N/A'}\nAeronave: ${r.aeronave||'N/A'}\nAcción: ${r.derrame_accion||'N/A'}`:'',r.fod_desc?`\nFOD (F4-7)\nObjeto: ${r.fod_desc}\nÁrea: ${r.fod_area||'N/A'}\nRemoción: ${r.fod_removed||'N/A'}`:'',r.puente_num?`\nPUENTE (K8-7)\nPuente: ${r.puente_num}\nFalla: ${r.puente_falla||'N/A'}\nEstado: ${r.puente_estado||'N/A'}\nVuelo: ${r.puente_vuelo||'N/A'}`:'',``,`RESPONSABLE`,`Oficial: ${r.oficial}`,`Fotos: ${r.fotos||0}`,``,`---`,`Generado: ${new Date().toLocaleString('es-SV')}`].filter(l=>l!==null).join('\n');
+window.closeDetail=e=>{if(e.target===document.getElementById('overlay'))document.getElementById('overlay').classList.remove('open');};
+
+window.openFullscreen=url=>{document.getElementById('photo-fullscreen-img').src=url;document.getElementById('photo-fullscreen').classList.add('open');};
+window.closeFullscreen=()=>document.getElementById('photo-fullscreen').classList.remove('open');
+
+window.exportTxt=function(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
+  const lines=['REPORTE DE INCIDENTE — AIES-SOARG','NSOAM Edición 001/2024','===========================================',`Tipo: ${TYPE_LABELS[r.tipo]||r.tipo}`,`Severidad: ${r.severidad?.toUpperCase()}`,`Fecha: ${r.fecha} ${r.hora}`,`Hora suceso: ${r.hora_suceso}`,`${r.turno||''}`,`Registrado por: ${r.registradoPor||''}`,``,`UBICACIÓN`,`Posición: ${r.posicion}  Zona: ${r.zona||'N/A'}`,`GPS: ${r.gps}`,``,`AERONAVE`,`Tipo: ${r.aeronave_tipo||'N/A'}  Matrícula/Vuelo: ${r.operador||'N/A'}`,``,`DESCRIPCIÓN`,r.descripcion,``,`INVOLUCRADOS`,`${r.involucrados||'N/A'}  Testigos: ${r.testigos||'N/A'}`,r.normativa?`\nINFRACCIÓN NSOAM\nInfractor: ${r.infractor}\nTipo: ${r.infractor_tipo}\nEmpresa: ${r.empresa}\nNormativa: ${r.normativa}`:'',r.sustancia?`\nDERRAME\nSustancia: ${r.sustancia}  Volumen: ${r.volumen}\nAcción: ${r.derrame_accion}`:'',r.fod_desc?`\nFOD\nObjeto: ${r.fod_desc}  Área: ${r.fod_area}  Remoción: ${r.fod_removed}`:'',r.puente_num?`\nPUENTE\n${r.puente_num}  Falla: ${r.puente_falla}  Estado: ${r.puente_estado}`:'',``,`Oficial: ${r.oficial}  Fotos: ${r.fotos||0}`,``,`---`,`Generado: ${new Date().toLocaleString('es-SV')}`].filter(x=>x!==null).join('\n');
   const blob=new Blob([lines],{type:'text/plain'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${r.id||'reporte'}.txt`; a.click();
-  showToast('Exportado');
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`reporte_${r.fecha||'sal'}.txt`;a.click();
 };
 
 // GPS
-window.requestGPS = function(){
-  const bar=document.getElementById('gps-bar'), txt=document.getElementById('gps-txt'), btn=document.getElementById('gps-btn');
-  bar.className='gps-bar loading'; txt.textContent='Obteniendo coordenadas...'; btn.textContent='Reintentar';
-  if(!navigator.geolocation){bar.className='gps-bar err'; txt.textContent='GPS no soportado'; return;}
+window.requestGPS=function(){
+  const bar=document.getElementById('gps-bar'),txt=document.getElementById('gps-txt'),btn=bar.querySelector('.gps-btn');
+  bar.className='gps-bar loading';txt.textContent='Obteniendo coordenadas...';btn.textContent='Reintentar';
+  if(!navigator.geolocation){bar.className='gps-bar err';txt.textContent='GPS no soportado';return;}
   navigator.geolocation.getCurrentPosition(
-    p=>{bar.className='gps-bar ok'; txt.textContent=`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)} (±${Math.round(p.coords.accuracy)}m)`; btn.textContent='Actualizar';},
-    ()=>{bar.className='gps-bar err'; txt.textContent='Permiso denegado — habilita ubicación en el navegador'; btn.textContent='Reintentar';},
+    p=>{bar.className='gps-bar ok';txt.textContent=`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)} (±${Math.round(p.coords.accuracy)}m)`;btn.textContent='Actualizar';},
+    ()=>{bar.className='gps-bar err';txt.textContent='Permiso denegado — habilita ubicación en el navegador';btn.textContent='Reintentar';},
     {enableHighAccuracy:true,timeout:8000}
   );
 };
 
 // TABS
-window.goTab = function(t){
-  ['nuevo','dashboard','sanciones','derrames','protocolos'].forEach(v=>document.getElementById('view-'+v).classList.toggle('active',v===t));
-  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['nuevo','dashboard','sanciones','derrames','protocolos'][i]===t));
-  if(t==='dashboard') renderDash();
-  if(t==='sanciones') renderSanciones();
-  if(t==='derrames') renderDerrames();
+window.goTab=function(t){
+  const all=['nuevo','dashboard','sanciones','derrames','protocolos','admin'];
+  all.forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.classList.toggle('active',v===t);});
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',all[i]===t));
+  if(t==='dashboard')renderDash();
+  if(t==='sanciones')renderSanciones();
+  if(t==='derrames')renderDerrames();
+  if(t==='admin'&&isAdmin)renderAdmin();
 };
 
-window.selectType = function(t){
+window.selectType=function(t){
   selType=t;
   document.getElementById('step-tipo').style.display='none';
   document.getElementById('step-form').style.display='block';
   document.getElementById('type-indicator').textContent=TYPE_LABELS[t];
   ['fields-sancion','fields-derrame','fields-fod','fields-puente'].forEach(id=>document.getElementById(id).style.display='none');
   ['banner-derrame','banner-fod'].forEach(id=>document.getElementById(id).style.display='none');
-  if(t==='sancion') document.getElementById('fields-sancion').style.display='block';
-  if(t==='derrame'){document.getElementById('fields-derrame').style.display='block'; document.getElementById('banner-derrame').style.display='flex';}
-  if(t==='fod'){document.getElementById('fields-fod').style.display='block'; document.getElementById('banner-fod').style.display='flex';}
-  if(t==='puente') document.getElementById('fields-puente').style.display='block';
+  if(t==='sancion')document.getElementById('fields-sancion').style.display='block';
+  if(t==='derrame'){document.getElementById('fields-derrame').style.display='block';document.getElementById('banner-derrame').style.display='flex';}
+  if(t==='fod'){document.getElementById('fields-fod').style.display='block';document.getElementById('banner-fod').style.display='flex';}
+  if(t==='puente')document.getElementById('fields-puente').style.display='block';
 };
 
-window.backToTypes = function(){
+window.backToTypes=function(){
   document.getElementById('step-form').style.display='none';
   document.getElementById('step-tipo').style.display='block';
-  selType=''; selSev=''; selTurno=''; photos=[]; invs=[];
+  selType='';selSev='';selTurno='';photoFiles=[];photoURLs=[];invs=[];
   document.getElementById('photo-row').innerHTML='';
   ['sev-baja','sev-media','sev-alta'].forEach(id=>document.getElementById(id).className='sev-opt');
   ['turno-alfa','turno-bravo','turno-charlie'].forEach(id=>document.getElementById(id).classList.remove('on'));
   document.querySelectorAll('.inv-chip').forEach(c=>c.classList.remove('on'));
 };
 
-window.setSev = s=>{selSev=s;['baja','media','alta'].forEach(v=>document.getElementById('sev-'+v).className='sev-opt'+(v===s?' s-'+v:''));};
-window.setTurno = t=>{selTurno=t;['alfa','bravo','charlie'].forEach(v=>document.getElementById('turno-'+v).classList.toggle('on',v===t.toLowerCase()));};
-window.toggleInv = el=>{el.classList.toggle('on'); invs=Array.from(document.querySelectorAll('.inv-chip.on')).map(c=>c.textContent);};
-window.addPhotos = inp=>{Array.from(inp.files).forEach(f=>{const r=new FileReader();r.onload=e=>{photos.push(e.target.result);document.getElementById('photo-row').innerHTML=photos.map(d=>`<img class="photo-thumb" src="${d}">`).join('');};r.readAsDataURL(f);});};
+window.setSev=s=>{selSev=s;['baja','media','alta'].forEach(v=>document.getElementById('sev-'+v).className='sev-opt'+(v===s?' s-'+v:''));};
+window.setTurno=t=>{selTurno=t;['alfa','bravo','charlie'].forEach(v=>document.getElementById('turno-'+v).classList.toggle('on',v===t.toLowerCase()));};
+window.toggleInv=el=>{el.classList.toggle('on');invs=Array.from(document.querySelectorAll('.inv-chip.on')).map(c=>c.textContent);};
 
-window.setFilt = (f,el)=>{filt=f; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); renderDash();};
-window.closeDetail = e=>{if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open');};
+window.addPhotos=inp=>{
+  const files=Array.from(inp.files);
+  files.forEach(f=>{
+    photoFiles.push(f);
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=document.createElement('img');
+      img.className='photo-thumb'; img.src=e.target.result;
+      img.onclick=()=>openFullscreen(e.target.result);
+      document.getElementById('photo-row').appendChild(img);
+    };
+    reader.readAsDataURL(f);
+  });
+};
+
+window.setFilt=(f,el)=>{filt=f;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderDash();};
 
 function resetForm(){
-  ['f-pos','f-zona','f-operador','f-desc','f-oficial','f-testigos','f-infractor','f-empresa','f-fod-desc','f-aeronave-derrame','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['f-infractor-tipo','f-normativa','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
-  selSev=''; selTurno=''; photos=[]; invs=[];
+  ['f-pos','f-zona','f-operador','f-desc','f-oficial','f-testigos','f-infractor','f-empresa','f-fod-desc','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-infractor-tipo','f-normativa','f-aeronave-tipo','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  selSev='';selTurno='';photoFiles=[];photoURLs=[];invs=[];
+  document.getElementById('photo-row').innerHTML='';
+  document.getElementById('progress-fill').style.width='0';
 }
 function updateBadge(){document.getElementById('badge').textContent=reports.length;}
 function updateTypeCounts(){['accidente','incidente','sancion','derrame','fod','puente'].forEach(t=>{const el=document.getElementById('cnt-'+t);if(el)el.textContent=reports.filter(r=>r.tipo===t).length+' registros';});}
