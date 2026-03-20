@@ -186,6 +186,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .rcard-desc{font-size:13px;color:var(--text);line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rcard-meta{display:flex;gap:10px;flex-wrap:wrap}
 .rcard-meta span{font-size:11px;color:var(--muted)}
+.ubi-chip{padding:4px 12px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;cursor:pointer;font-weight:500;color:var(--text);background:#fff;transition:all .12s}
+.ubi-chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .empty{text-align:center;padding:48px 20px}
 .empty p{font-size:14px;color:var(--muted);margin-top:10px}
 
@@ -325,40 +327,61 @@ input[type=file]{display:none}
         <div id="type-indicator" style="display:inline-flex;align-items:center;gap:6px;background:#EEF4FF;padding:5px 12px;border-radius:20px;margin-bottom:14px;font-size:12px;font-weight:600;color:var(--accent2)"></div>
 
         <div class="section-hd">Ubicación</div>
-        <div class="row2">
+
+        <!-- Ubicacion para SANCION -->
+        <div id="ubicacion-sancion" style="display:none">
           <div class="field">
-            <label>Posición / Puesto <span class="req">*</span></label>
-            <input type="text" id="f-pos" placeholder="Ej: Posición 12">
+            <label>Tipo de vía <span class="req">*</span></label>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <div id="via-servicio" onclick="setVia('servicio')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;background:#fff;transition:all .15s">
+                <div style="font-size:12px;font-weight:700;color:var(--text)">Calle de servicio</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:2px">Plataforma / Rodaje</div>
+              </div>
+              <div id="via-perimetral" onclick="setVia('perimetral')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;background:#fff;transition:all .15s">
+                <div style="font-size:12px;font-weight:700;color:var(--text)">Calle perimetral</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:2px">Perímetro del aeropuerto</div>
+              </div>
+            </div>
+            <input type="hidden" id="f-via-tipo" value="">
           </div>
           <div class="field">
-            <label id="label-zona">Puente / Zona</label>
-            <select id="f-zona-select" style="display:none">
-              <option value="">Seleccionar...</option>
-              <optgroup label="Calles perimetrales">
-                <option>Perimetral Norte</option>
-                <option>Perimetral Sur</option>
-                <option>Perimetral Este</option>
-                <option>Perimetral Oeste</option>
-                <option>Perimetral Interna Norte</option>
-                <option>Perimetral Interna Sur</option>
-              </optgroup>
-              <optgroup label="Calles de servicio">
-                <option>Calle de servicio — Plataforma AIES 1</option>
-                <option>Calle de servicio — Plataforma AIES 2</option>
-                <option>Calle de servicio — Carga</option>
-                <option>Calle de servicio — Mantenimiento</option>
-                <option>Calle de rodaje A</option>
-                <option>Calle de rodaje B</option>
-                <option>Calle de rodaje G</option>
-              </optgroup>
-              <optgroup label="Otras áreas">
-                <option>Plataforma de pasajeros</option>
-                <option>Plataforma de carga</option>
-                <option>Área de mantenimiento</option>
-                <option>Puente de abordaje</option>
-              </optgroup>
-            </select>
-            <input type="text" id="f-zona" placeholder="Ej: Puente 3A">
+            <label>Ubicación específica</label>
+            <div id="chips-servicio" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+              <span onclick="setUbicacion('Calle de servicio — Plataforma AIES 1')" class="ubi-chip">Plataforma AIES 1</span>
+              <span onclick="setUbicacion('Calle de servicio — Plataforma AIES 2')" class="ubi-chip">Plataforma AIES 2</span>
+              <span onclick="setUbicacion('Calle de servicio — Carga')" class="ubi-chip">Carga</span>
+              <span onclick="setUbicacion('Calle de servicio — Mantenimiento')" class="ubi-chip">Mantenimiento</span>
+              <span onclick="setUbicacion('Calle de rodaje A')" class="ubi-chip">Rodaje A</span>
+              <span onclick="setUbicacion('Calle de rodaje B')" class="ubi-chip">Rodaje B</span>
+              <span onclick="setUbicacion('Calle de rodaje G')" class="ubi-chip">Rodaje G</span>
+            </div>
+            <div id="chips-perimetral" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+              <span onclick="setUbicacion('Perimetral Norte')" class="ubi-chip">Norte</span>
+              <span onclick="setUbicacion('Perimetral Sur')" class="ubi-chip">Sur</span>
+              <span onclick="setUbicacion('Perimetral Este')" class="ubi-chip">Este</span>
+              <span onclick="setUbicacion('Perimetral Oeste')" class="ubi-chip">Oeste</span>
+              <span onclick="setUbicacion('Perimetral Interna Norte')" class="ubi-chip">Interna Norte</span>
+              <span onclick="setUbicacion('Perimetral Interna Sur')" class="ubi-chip">Interna Sur</span>
+            </div>
+            <input type="text" id="f-pos" placeholder="O describe la ubicación exacta" style="margin-top:4px">
+          </div>
+          <div class="field">
+            <label>Entre posiciones / referencia</label>
+            <input type="text" id="f-zona" placeholder="Ej: Entre posición 08 y 09, frente a puente 3">
+          </div>
+        </div>
+
+        <!-- Ubicacion para otros tipos -->
+        <div id="ubicacion-normal">
+          <div class="row2">
+            <div class="field">
+              <label>Posición / Puesto <span class="req">*</span></label>
+              <input type="text" id="f-pos-normal" placeholder="Ej: Posición 12">
+            </div>
+            <div class="field">
+              <label>Puente / Zona</label>
+              <input type="text" id="f-zona-normal" placeholder="Ej: Puente 3A">
+            </div>
           </div>
         </div>
         <div class="gps-bar loading" id="gps-bar">
@@ -797,7 +820,8 @@ function compressImage(base64, maxWidth, quality){
 
 // SUBMIT
 window.submitReport=async()=>{
-  const pos=document.getElementById('f-pos').value.trim();
+  const posEl=document.getElementById('f-pos')||document.getElementById('f-pos-normal');
+  const pos=posEl?posEl.value.trim():'';
   const desc=document.getElementById('f-desc').value.trim();
   const oficial=document.getElementById('f-oficial').value.trim();
   if(!pos||!desc||!oficial||!selType){showToast('Completa los campos obligatorios');return;}
@@ -833,7 +857,7 @@ window.submitReport=async()=>{
     fecha:new Date().toLocaleDateString('es-SV'),
     hora:new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'}),
     hora_suceso:document.getElementById('f-hora-suceso').value||'No especificada',
-    posicion:pos, zona:document.getElementById('f-zona').value,
+    posicion:pos||document.getElementById('f-pos-normal')?.value||'', zona:document.getElementById('f-zona')?.value||document.getElementById('f-zona-normal')?.value||'', via_tipo:document.getElementById('f-via-tipo')?.value||'',
     aeronave_tipo:document.getElementById('f-aeronave-tipo').value,
     operador:document.getElementById('f-operador').value,
     descripcion:desc, oficial, turno:turnoLabel,
@@ -1067,6 +1091,44 @@ window.goTab=function(t){
   if(t==='admin'&&isAdmin)renderAdmin();
 };
 
+window.setVia=function(tipo){
+  document.getElementById('f-via-tipo').value=tipo;
+  const vs=document.getElementById('via-servicio');
+  const vp=document.getElementById('via-perimetral');
+  const cs=document.getElementById('chips-servicio');
+  const cp=document.getElementById('chips-perimetral');
+  const activeStyle='background:var(--navy);border-color:var(--navy)';
+  const inactiveStyle='background:#fff;border-color:var(--border)';
+  if(tipo==='servicio'){
+    vs.style.cssText=vs.style.cssText.replace(/background:[^;]+/,'background:var(--navy)');
+    vs.style.background='var(--navy)';vs.style.borderColor='var(--navy)';
+    vs.querySelector('div').style.color='#fff';
+    vs.querySelectorAll('div')[1].style.color='rgba(255,255,255,0.7)';
+    vp.style.background='#fff';vp.style.borderColor='var(--border)';
+    vp.querySelector('div').style.color='var(--text)';
+    vp.querySelectorAll('div')[1].style.color='var(--muted)';
+    if(cs)cs.style.display='flex';
+    if(cp)cp.style.display='none';
+  } else {
+    vp.style.background='var(--navy)';vp.style.borderColor='var(--navy)';
+    vp.querySelector('div').style.color='#fff';
+    vp.querySelectorAll('div')[1].style.color='rgba(255,255,255,0.7)';
+    vs.style.background='#fff';vs.style.borderColor='var(--border)';
+    vs.querySelector('div').style.color='var(--text)';
+    vs.querySelectorAll('div')[1].style.color='var(--muted)';
+    if(cp)cp.style.display='flex';
+    if(cs)cs.style.display='none';
+  }
+};
+
+window.setUbicacion=function(val){
+  const inp=document.getElementById('f-pos');
+  if(inp)inp.value=val;
+  document.querySelectorAll('.ubi-chip').forEach(c=>{
+    c.classList.toggle('on', c.getAttribute('onclick').includes(val.replace(/'/g,"\'")));
+  });
+};
+
 window.setEmpresa=function(name){
   document.getElementById('f-empresa').value=name;
   // highlight active chip
@@ -1091,34 +1153,21 @@ window.selectType=function(t){
 
   // Dynamic fields for sancion vs others
   const isSancion = t==='sancion';
+  // Show/hide ubicacion blocks
+  const ubSancion=document.getElementById('ubicacion-sancion');
+  const ubNormal=document.getElementById('ubicacion-normal');
+  if(ubSancion)ubSancion.style.display=isSancion?'block':'none';
+  if(ubNormal)ubNormal.style.display=isSancion?'none':'block';
   // Section header
   const hd=document.getElementById('aeronave-section-hd');
   if(hd)hd.textContent=isSancion?'Vehículo':'Aeronave';
-  // Aeronave/Vehiculo label
+  // Labels
   const lbTipo=document.getElementById('label-aeronave-tipo');
   if(lbTipo)lbTipo.textContent=isSancion?'Tipo de vehículo':'Tipo de aeronave';
-  // Matricula/Num equipo label
   const lbMat=document.getElementById('label-matricula');
   if(lbMat)lbMat.textContent=isSancion?'Número de equipo':'Matrícula / Vuelo';
-  // Matricula placeholder
   const inpOp=document.getElementById('f-operador');
   if(inpOp)inpOp.placeholder=isSancion?'Ej: GSE-042':'Ej: N1234 / AV204';
-  // Zona field: show select for sancion, text input for others
-  const zonaSelect=document.getElementById('f-zona-select');
-  const zonaInput=document.getElementById('f-zona');
-  const lbZona=document.getElementById('label-zona');
-  if(isSancion){
-    if(zonaSelect)zonaSelect.style.display='block';
-    if(zonaInput)zonaInput.style.display='none';
-    if(lbZona)lbZona.textContent='Calle perimetral / Calle de servicio';
-    // Sync select value to hidden input
-    if(zonaSelect)zonaSelect.onchange=()=>{if(zonaInput)zonaInput.value=zonaSelect.value;};
-  } else {
-    if(zonaSelect)zonaSelect.style.display='none';
-    if(zonaInput)zonaInput.style.display='block';
-    if(lbZona)lbZona.textContent='Puente / Zona';
-    if(inpOp)inpOp.placeholder='Ej: N1234 / AV204';
-  }
   // Show/hide optgroups based on type
   const gse=document.getElementById('grp-gse');
   const acGroups=['grp-airbus','grp-boeing','grp-embraer','grp-atr','grp-otro-ac'];
