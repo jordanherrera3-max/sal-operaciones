@@ -326,8 +326,40 @@ input[type=file]{display:none}
 
         <div class="section-hd">Ubicación</div>
         <div class="row2">
-          <div class="field"><label>Posición / Puesto <span class="req">*</span></label><input type="text" id="f-pos" placeholder="Ej: Posición 12"></div>
-          <div class="field"><label>Puente / Zona</label><input type="text" id="f-zona" placeholder="Ej: Puente 3A"></div>
+          <div class="field">
+            <label>Posición / Puesto <span class="req">*</span></label>
+            <input type="text" id="f-pos" placeholder="Ej: Posición 12">
+          </div>
+          <div class="field">
+            <label id="label-zona">Puente / Zona</label>
+            <select id="f-zona-select" style="display:none">
+              <option value="">Seleccionar...</option>
+              <optgroup label="Calles perimetrales">
+                <option>Perimetral Norte</option>
+                <option>Perimetral Sur</option>
+                <option>Perimetral Este</option>
+                <option>Perimetral Oeste</option>
+                <option>Perimetral Interna Norte</option>
+                <option>Perimetral Interna Sur</option>
+              </optgroup>
+              <optgroup label="Calles de servicio">
+                <option>Calle de servicio — Plataforma AIES 1</option>
+                <option>Calle de servicio — Plataforma AIES 2</option>
+                <option>Calle de servicio — Carga</option>
+                <option>Calle de servicio — Mantenimiento</option>
+                <option>Calle de rodaje A</option>
+                <option>Calle de rodaje B</option>
+                <option>Calle de rodaje G</option>
+              </optgroup>
+              <optgroup label="Otras áreas">
+                <option>Plataforma de pasajeros</option>
+                <option>Plataforma de carga</option>
+                <option>Área de mantenimiento</option>
+                <option>Puente de abordaje</option>
+              </optgroup>
+            </select>
+            <input type="text" id="f-zona" placeholder="Ej: Puente 3A">
+          </div>
         </div>
         <div class="gps-bar loading" id="gps-bar">
           <div class="gps-dot"></div>
@@ -335,11 +367,28 @@ input[type=file]{display:none}
           <button class="gps-btn" onclick="requestGPS()">Reintentar</button>
         </div>
 
-        <div class="section-hd">Aeronave</div>
+        <div class="section-hd" id="aeronave-section-hd">Aeronave</div>
         <div class="row2">
           <div class="field">
-            <label>Tipo de aeronave</label>
+            <label id="label-aeronave-tipo">Tipo de aeronave</label>
             <select id="f-aeronave-tipo">
+              <option value="">-- Vehículo --</option>
+              <optgroup label="Vehículos GSE">
+                <option>Tractor de remolque de equipaje</option>
+                <option>Tractor de remolque de aeronave</option>
+                <option>Banda transportadora de equipaje</option>
+                <option>Loader / Elevador de carga</option>
+                <option>Camión de catering</option>
+                <option>Camión de combustible</option>
+                <option>Camión de limpieza</option>
+                <option>Escalera de pasajeros</option>
+                <option>GPU / Generador eléctrico</option>
+                <option>Bicicleta</option>
+                <option>Motocicleta</option>
+                <option>Vehículo de supervisión</option>
+                <option>Otro vehículo GSE</option>
+              </optgroup>
+              <optgroup label="-- Aeronaves --">
               <option value="">Seleccionar...</option>
               <optgroup label="Airbus">
                 <option>A318</option><option>A319</option><option>A320</option><option>A321</option>
@@ -368,7 +417,7 @@ input[type=file]{display:none}
               </optgroup>
             </select>
           </div>
-          <div class="field"><label>Matrícula / Vuelo</label><input type="text" id="f-operador" placeholder="Ej: N1234 / AV204"></div>
+          <div class="field"><label id="label-matricula">Matrícula / Vuelo</label><input type="text" id="f-operador" placeholder="Ej: N1234 / AV204" id="f-operador"></div>
         </div>
 
         <div class="section-hd">Detalles</div>
@@ -381,7 +430,19 @@ input[type=file]{display:none}
               <div class="field"><label>Tipo</label>
                 <select id="f-infractor-tipo"><option value="">Seleccionar...</option><option>Conductor de vehículo</option><option>Peatón</option><option>Personal de rampa</option><option>Personal externo</option></select>
               </div>
-              <div class="field"><label>Empresa</label><input type="text" id="f-empresa" placeholder="Handler u operador"></div>
+              <div class="field">
+                <label>Empresa</label>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">
+                  <span onclick="setEmpresa('Avianca')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">Avianca</span>
+                  <span onclick="setEmpresa('ADES')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">ADES</span>
+                  <span onclick="setEmpresa('AirSupport')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">AirSupport</span>
+                  <span onclick="setEmpresa('Volaris')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">Volaris</span>
+                  <span onclick="setEmpresa('AvioTec')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">AvioTec</span>
+                  <span onclick="setEmpresa('Aeroman')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">Aeroman</span>
+                  <span onclick="setEmpresa('CEPA')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">CEPA</span>
+                </div>
+                <input type="text" id="f-empresa" placeholder="O escribe el nombre">
+              </div>
             </div>
             <div class="field">
               <label>Normativa infringida <span class="art">(NSOAM)</span></label>
@@ -404,6 +465,9 @@ input[type=file]{display:none}
                 <option value="N11-10 — Sin permiso de conducción del aeropuerto">N11-10 — Sin permiso de conducción</option>
                 <option value="I6-1 — Acceso a área de maniobras sin autorización ATC">I6-1 — Área de maniobras sin autorización</option>
                 <option value="C1-10 — No limpiar zona de trabajo tras la operación">C1-10 — No limpiar zona de trabajo</option>
+                <option value="Llamado de atención verbal — Primera infracción">Llamado de atención verbal — Primera infracción</option>
+                <option value="Llamado de atención escrito — Reincidencia">Llamado de atención escrito — Reincidencia</option>
+                <option value="Retiro provisional de carnet — Q14-2a NSOAM">Retiro provisional de carnet — Q14-2a NSOAM</option>
                 <option value="Otra infracción NSOAM">Otra infracción NSOAM</option>
               </select>
             </div>
@@ -1005,6 +1069,16 @@ window.goTab=function(t){
   if(t==='admin'&&isAdmin)renderAdmin();
 };
 
+window.setEmpresa=function(name){
+  document.getElementById('f-empresa').value=name;
+  // highlight active chip
+  document.querySelectorAll('#fields-sancion span[onclick]').forEach(s=>{
+    s.style.background=s.getAttribute('onclick').includes(name)?'var(--navy)':'#fff';
+    s.style.color=s.getAttribute('onclick').includes(name)?'#fff':'';
+    s.style.borderColor=s.getAttribute('onclick').includes(name)?'var(--navy)':'var(--border)';
+  });
+};
+
 window.selectType=function(t){
   selType=t;
   document.getElementById('step-tipo').style.display='none';
@@ -1016,6 +1090,51 @@ window.selectType=function(t){
   if(t==='derrame'){document.getElementById('fields-derrame').style.display='block';document.getElementById('banner-derrame').style.display='flex';}
   if(t==='fod'){document.getElementById('fields-fod').style.display='block';document.getElementById('banner-fod').style.display='flex';}
   if(t==='puente')document.getElementById('fields-puente').style.display='block';
+
+  // Dynamic fields for sancion vs others
+  const isSancion = t==='sancion';
+  // Section header
+  const hd=document.getElementById('aeronave-section-hd');
+  if(hd)hd.textContent=isSancion?'Vehículo':'Aeronave';
+  // Aeronave/Vehiculo label
+  const lbTipo=document.getElementById('label-aeronave-tipo');
+  if(lbTipo)lbTipo.textContent=isSancion?'Tipo de vehículo':'Tipo de aeronave';
+  // Matricula/Num equipo label
+  const lbMat=document.getElementById('label-matricula');
+  if(lbMat)lbMat.textContent=isSancion?'Número de equipo':'Matrícula / Vuelo';
+  // Matricula placeholder
+  const inpOp=document.getElementById('f-operador');
+  if(inpOp)inpOp.placeholder=isSancion?'Ej: GSE-042':'Ej: N1234 / AV204';
+  // Zona field: show select for sancion, text input for others
+  const zonaSelect=document.getElementById('f-zona-select');
+  const zonaInput=document.getElementById('f-zona');
+  const lbZona=document.getElementById('label-zona');
+  if(isSancion){
+    if(zonaSelect)zonaSelect.style.display='block';
+    if(zonaInput)zonaInput.style.display='none';
+    if(lbZona)lbZona.textContent='Calle perimetral / Calle de servicio';
+    // Sync select value to hidden input
+    if(zonaSelect)zonaSelect.onchange=()=>{if(zonaInput)zonaInput.value=zonaSelect.value;};
+  } else {
+    if(zonaSelect)zonaSelect.style.display='none';
+    if(zonaInput)zonaInput.style.display='block';
+    if(lbZona)lbZona.textContent='Puente / Zona';
+    if(inpOp)inpOp.placeholder='Ej: N1234 / AV204';
+  }
+  // Reset aeronave tipo select to correct optgroup
+  const sel=document.getElementById('f-aeronave-tipo');
+  if(sel){
+    // Show/hide vehicle optgroup vs aeronave optgroups
+    Array.from(sel.options).forEach(o=>{
+      if(o.parentElement.tagName==='OPTGROUP'){
+        const grpLabel=o.parentElement.label;
+        if(isSancion && grpLabel==='-- Aeronaves --') o.parentElement.style.display='none';
+        else if(!isSancion && grpLabel==='Vehículos GSE') o.parentElement.style.display='none';
+        else o.parentElement.style.display='';
+      }
+    });
+    sel.selectedIndex=0;
+  }
 };
 
 window.backToTypes=function(){
@@ -1051,7 +1170,8 @@ window.setFilt=(f,el)=>{filt=f;document.querySelectorAll('.chip').forEach(c=>c.c
 
 function resetForm(){
   ['f-pos','f-zona','f-operador','f-desc','f-oficial','f-testigos','f-infractor','f-empresa','f-fod-desc','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['f-infractor-tipo','f-normativa','f-aeronave-tipo','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  ['f-infractor-tipo','f-normativa','f-aeronave-tipo','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion','f-zona-select'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  document.querySelectorAll('#fields-sancion span[onclick]').forEach(s=>{s.style.background='#fff';s.style.color='';s.style.borderColor='var(--border)';});
   selSev='';selTurno='';photoFiles=[];photoURLs=[];invs=[];
   document.getElementById('photo-row').innerHTML='';
   document.getElementById('progress-fill').style.width='0';
