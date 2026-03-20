@@ -641,7 +641,7 @@ input[type=file]{display:none}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
 
 const ADMIN_EMAIL = "jordanherrera3@gmail.com";
 
@@ -657,7 +657,7 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
-const storage = getStorage(fbApp);
+
 
 const TYPE_LABELS={accidente:'Accidente / Colisión',incidente:'Incidente operativo',sancion:'Sanción conductor / peatón',derrame:'Derrame combustible / hidráulico',fod:'FOD — Objeto foráneo',puente:'Falla de puente de abordaje'};
 
@@ -717,6 +717,22 @@ function subscribeReports(){
   },()=>{document.getElementById('sync-dot').className='sync-dot offline';});
 }
 
+// Compress image helper
+function compressImage(base64, maxWidth, quality){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      let w=img.width,h=img.height;
+      if(w>maxWidth){h=Math.round(h*maxWidth/w);w=maxWidth;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      res(canvas.toDataURL('image/jpeg',quality));
+    };
+    img.src=base64;
+  });
+}
+
 // SUBMIT
 window.submitReport=async()=>{
   const pos=document.getElementById('f-pos').value.trim();
@@ -727,20 +743,24 @@ window.submitReport=async()=>{
   btn.disabled=true;btn.classList.add('loading');
   document.getElementById('btn-txt').textContent='Guardando...';
 
-  // Upload photos
+  // Convert photos to Base64 for Firestore
   let uploadedURLs=[];
   if(photoFiles.length>0){
     document.getElementById('upload-progress').classList.add('show');
     for(let i=0;i<photoFiles.length;i++){
       const f=photoFiles[i];
-      const name=`incidentes/${Date.now()}_${i}_${f.name}`;
-      const storageRef=ref(storage,name);
-      await uploadBytes(storageRef,f);
-      const url=await getDownloadURL(storageRef);
-      uploadedURLs.push(url);
+      const base64=await new Promise((res,rej)=>{
+        const reader=new FileReader();
+        reader.onload=e=>res(e.target.result);
+        reader.onerror=rej;
+        reader.readAsDataURL(f);
+      });
+      // Compress if too large
+      const compressed=await compressImage(base64, 800, 0.7);
+      uploadedURLs.push(compressed);
       const pct=Math.round(((i+1)/photoFiles.length)*100);
       document.getElementById('progress-fill').style.width=pct+'%';
-      document.getElementById('progress-txt').textContent=`Subiendo fotos... ${pct}%`;
+      document.getElementById('progress-txt').textContent=`Procesando fotos... ${pct}%`;
     }
     document.getElementById('upload-progress').classList.remove('show');
   }
