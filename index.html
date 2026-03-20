@@ -372,8 +372,8 @@ input[type=file]{display:none}
           <div class="field">
             <label id="label-aeronave-tipo">Tipo de aeronave</label>
             <select id="f-aeronave-tipo">
-              <option value="">-- Vehículo --</option>
-              <optgroup label="Vehículos GSE">
+              <option value="">Seleccionar...</option>
+              <optgroup label="Vehículos GSE" id="grp-gse">
                 <option>Tractor de remolque de equipaje</option>
                 <option>Tractor de remolque de aeronave</option>
                 <option>Banda transportadora de equipaje</option>
@@ -388,16 +388,14 @@ input[type=file]{display:none}
                 <option>Vehículo de supervisión</option>
                 <option>Otro vehículo GSE</option>
               </optgroup>
-              <optgroup label="-- Aeronaves --">
-              <option value="">Seleccionar...</option>
-              <optgroup label="Airbus">
+              <optgroup label="Airbus" id="grp-airbus">
                 <option>A318</option><option>A319</option><option>A320</option><option>A321</option>
                 <option>A220-100</option><option>A220-300</option>
                 <option>A330-200</option><option>A330-300</option>
                 <option>A350-900</option><option>A350-1000</option>
                 <option>A380</option>
               </optgroup>
-              <optgroup label="Boeing">
+              <optgroup label="Boeing" id="grp-boeing">
                 <option>B737-700</option><option>B737-800</option><option>B737-900</option>
                 <option>B737 MAX 8</option><option>B737 MAX 9</option>
                 <option>B757-200</option><option>B757-300</option>
@@ -405,14 +403,14 @@ input[type=file]{display:none}
                 <option>B777-200</option><option>B777-300</option>
                 <option>B787-8</option><option>B787-9</option><option>B787-10</option>
               </optgroup>
-              <optgroup label="Embraer">
+              <optgroup label="Embraer" id="grp-embraer">
                 <option>E170</option><option>E175</option><option>E190</option><option>E195</option>
                 <option>E190-E2</option><option>E195-E2</option>
               </optgroup>
-              <optgroup label="ATR">
+              <optgroup label="ATR" id="grp-atr">
                 <option>ATR 42</option><option>ATR 72</option>
               </optgroup>
-              <optgroup label="Otro">
+              <optgroup label="Otro" id="grp-otro-ac">
                 <option>Carguero</option><option>Aviación general</option><option>Otro</option>
               </optgroup>
             </select>
@@ -1121,20 +1119,13 @@ window.selectType=function(t){
     if(lbZona)lbZona.textContent='Puente / Zona';
     if(inpOp)inpOp.placeholder='Ej: N1234 / AV204';
   }
-  // Reset aeronave tipo select to correct optgroup
+  // Show/hide optgroups based on type
+  const gse=document.getElementById('grp-gse');
+  const acGroups=['grp-airbus','grp-boeing','grp-embraer','grp-atr','grp-otro-ac'];
+  if(gse) gse.style.display=isSancion?'':'none';
+  acGroups.forEach(id=>{const g=document.getElementById(id);if(g)g.style.display=isSancion?'none':'';});
   const sel=document.getElementById('f-aeronave-tipo');
-  if(sel){
-    // Show/hide vehicle optgroup vs aeronave optgroups
-    Array.from(sel.options).forEach(o=>{
-      if(o.parentElement.tagName==='OPTGROUP'){
-        const grpLabel=o.parentElement.label;
-        if(isSancion && grpLabel==='-- Aeronaves --') o.parentElement.style.display='none';
-        else if(!isSancion && grpLabel==='Vehículos GSE') o.parentElement.style.display='none';
-        else o.parentElement.style.display='';
-      }
-    });
-    sel.selectedIndex=0;
-  }
+  if(sel) sel.selectedIndex=0;
 };
 
 window.backToTypes=function(){
