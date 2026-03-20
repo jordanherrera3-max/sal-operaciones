@@ -584,9 +584,12 @@ input[type=file]{display:none}
           <div class="field"><label>Hora aprox. del suceso</label><input type="time" id="f-hora-suceso"></div>
         </div>
         <div class="field"><label>Testigos (opcional)</label><input type="text" id="f-testigos" placeholder="Nombres separados por coma"></div>
-        <button class="btn-submit" id="btn-submit" onclick="submitReport()">
-          <div class="spinner"></div><span id="btn-txt">Registrar incidente</span>
-        </button>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:16px">
+          <button class="btn-submit" id="btn-submit" onclick="submitReport()" style="margin-top:0">
+            <div class="spinner"></div><span id="btn-txt">Registrar incidente</span>
+          </button>
+          <button onclick="confirmReset()" style="padding:14px 16px;background:#F1F5F9;color:var(--text);border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap" title="Limpiar formulario">🗑️ Limpiar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -843,7 +846,7 @@ window.submitReport=async()=>{
         reader.readAsDataURL(f);
       });
       // Compress if too large
-      const compressed=await compressImage(base64, 800, 0.7);
+      const compressed=await compressImage(base64, 400, 0.4);
       uploadedURLs.push(compressed);
       const pct=Math.round(((i+1)/photoFiles.length)*100);
       document.getElementById('progress-fill').style.width=pct+'%';
@@ -874,10 +877,26 @@ window.submitReport=async()=>{
   if(selType==='fod'){r.fod_desc=document.getElementById('f-fod-desc').value;r.fod_area=document.getElementById('f-fod-area').value;r.fod_removed=document.getElementById('f-fod-removed').value;}
   if(selType==='puente'){r.puente_num=document.getElementById('f-puente-num').value;r.puente_pos=document.getElementById('f-puente-pos').value;r.puente_falla=document.getElementById('f-puente-falla').value;r.puente_estado=document.getElementById('f-puente-estado').value;r.puente_vuelo=document.getElementById('f-puente-vuelo').value;}
 
+  // Check size — Firestore limit is ~1MB per doc
+  const rStr=JSON.stringify(r);
+  if(rStr.length>800000){
+    // Too large — save without photos, show warning
+    r.fotoURLs=[];
+    r.fotos=0;
+    r.fotoNota='Fotos no guardadas por tamaño excesivo. Use menos fotos o fotos más pequeñas.';
+  }
   try{
     await addDoc(collection(db,'incidentes'),r);
     resetForm();backToTypes();showToast('Incidente registrado correctamente');
-  }catch(e){showToast('Error al guardar. Verifica tu conexión.');}
+  }catch(e){
+    console.error(e);
+    // Try without photos
+    r.fotoURLs=[];r.fotos=0;
+    try{
+      await addDoc(collection(db,'incidentes'),r);
+      resetForm();backToTypes();showToast('Registrado (sin fotos — tamaño excedido)');
+    }catch(e2){showToast('Error al guardar: '+e2.message);}
+  }
   btn.disabled=false;btn.classList.remove('loading');
   document.getElementById('btn-txt').textContent='Registrar incidente';
 };
@@ -1356,6 +1375,13 @@ window.selectType=function(t){
   if(sel) sel.selectedIndex=0;
 };
 
+window.confirmReset=function(){
+  if(confirm('¿Limpiar todos los campos del formulario?')){
+    resetForm();
+    showToast('Formulario limpiado');
+  }
+};
+
 window.backToTypes=function(){
   document.getElementById('step-form').style.display='none';
   document.getElementById('step-tipo').style.display='block';
@@ -1372,6 +1398,7 @@ window.toggleInv=el=>{el.classList.toggle('on');invs=Array.from(document.querySe
 
 window.addPhotos=inp=>{
   const files=Array.from(inp.files);
+  if(photoFiles.length+files.length>3){showToast('Máximo 3 fotos por reporte');return;}
   files.forEach(f=>{
     photoFiles.push(f);
     const reader=new FileReader();
