@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>SAL Operaciones — AIES-SOARG</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -999,6 +1000,7 @@ function renderList(container,list,showAdmin){
   container.innerHTML=list.map(r=>{
     const art=r.normativa?r.normativa.split('—')[0].trim():'';
     const hasPhotos=r.fotoURLs&&r.fotoURLs.length>0;
+    const adminBtns=showAdmin?`<div style="display:flex;gap:6px;margin-top:10px"><button onclick="event.stopPropagation();openEdit('${r.id}')" style="flex:1;padding:7px;background:var(--blue-bg);color:var(--blue-tx);border:1px solid var(--blue-bd);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">✏️ Editar</button><button onclick="event.stopPropagation();deleteReport('${r.id}')" style="flex:1;padding:7px;background:var(--red-bg);color:var(--red-tx);border:1px solid var(--red-bd);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🗑️ Eliminar</button></div>`:'';
     return`<div class="rcard" onclick="openDetail('${r.id}')">
       <div class="rcard-top"><span class="rcard-id">${r.fecha||''} ${r.hora||''}</span><span class="rbadge rb-${r.severidad||'baja'}">${(r.severidad||'baja').charAt(0).toUpperCase()+(r.severidad||'baja').slice(1)}</span></div>
       <div style="margin-bottom:6px"><span class="rtype-badge">${TYPE_LABELS[r.tipo]||r.tipo}</span>${art?`<span class="rart-badge">${art}</span>`:''}</div>
@@ -1010,6 +1012,7 @@ function renderList(container,list,showAdmin){
         <span>${r.oficial||''}</span>
         ${hasPhotos?`<span>📷 ${r.fotoURLs.length} foto${r.fotoURLs.length>1?'s':''}</span>`:''}
       </div>
+      ${adminBtns}
     </div>`;}).join('');
 }
 
@@ -1041,7 +1044,7 @@ window.openDetail=function(id){
     r.puente_vuelo?['Vuelo afectado',r.puente_vuelo]:null,
   ].filter(x=>x&&x[1]);
 
-  const adminActions=isAdmin?`<div class="d-actions"><button class="btn-edit" onclick="openEdit('${r.id}')">Editar</button><button class="btn-delete" onclick="deleteReport('${r.id}')">Eliminar</button></div>`:'';
+  const adminActions=isAdmin?`<div class="d-actions"><button class="btn-edit" onclick="openEdit('${r.id}')">✏️ Editar</button><button class="btn-delete" onclick="deleteReport('${r.id}')">🗑️ Eliminar</button></div>`:'';
 
   document.getElementById('detail-content').innerHTML=`
     <div class="d-title">${TYPE_LABELS[r.tipo]||r.tipo}</div>
@@ -1051,7 +1054,10 @@ window.openDetail=function(id){
     ${hasPhotos?`<div class="section-hd" style="margin-top:14px">Evidencia fotográfica</div><div class="photo-grid">${r.fotoURLs.map(url=>`<img src="${url}" onclick="openFullscreen('${url}')" alt="foto">`).join('')}</div>`:''}
     ${rows.map(([k,v])=>`<div class="d-row"><span class="d-k">${k}</span><span class="d-v">${v}</span></div>`).join('')}
     ${adminActions}
-    <button class="btn-exp" onclick="exportTxt('${r.id}')">Exportar reporte (.txt)</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <button class="btn-exp" onclick="exportPDF('${r.id}')">Exportar PDF</button>
+      <button class="btn-exp" onclick="exportTxt('${r.id}')">Exportar .txt</button>
+    </div>
   `;
   document.getElementById('overlay').classList.add('open');
 };
@@ -1060,6 +1066,179 @@ window.closeDetail=e=>{if(e.target===document.getElementById('overlay'))document
 
 window.openFullscreen=url=>{document.getElementById('photo-fullscreen-img').src=url;document.getElementById('photo-fullscreen').classList.add('open');};
 window.closeFullscreen=()=>document.getElementById('photo-fullscreen').classList.remove('open');
+
+window.exportPDF=function(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const navy=[15,34,64];
+  const gray=[100,116,139];
+  const lightGray=[241,245,249];
+  const red=[121,31,31];
+  const amber=[133,80,11];
+  const green=[59,109,17];
+  const W=210;
+  let y=0;
+
+  // Header bar
+  doc.setFillColor(...navy);
+  doc.rect(0,0,W,28,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('REPORTE DE INCIDENTE',14,12);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text('NORMATIVA NSOAM 001/2024 — AIES-SOARG',14,19);
+  doc.text(`Generado: ${new Date().toLocaleString('es-SV')}`,14,25);
+
+  // Severity badge top right
+  const sev=r.severidad||'baja';
+  const sevColor=sev==='alta'?red:sev==='media'?amber:green;
+  doc.setFillColor(...sevColor);
+  doc.roundedRect(W-45,6,36,14,3,3,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(10);doc.setFont('helvetica','bold');
+  doc.text(sev.toUpperCase(),W-27,15,{align:'center'});
+
+  y=36;
+
+  // Type badge
+  const TYPE_LABELS_PDF={accidente:'Accidente / Colisión',incidente:'Incidente operativo',sancion:'Sanción conductor / peatón',derrame:'Derrame combustible / hidráulico',fod:'FOD — Objeto foráneo',puente:'Falla de puente de abordaje'};
+  doc.setFillColor(230,241,251);
+  doc.roundedRect(14,y,80,8,2,2,'F');
+  doc.setTextColor(24,95,165);
+  doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text(TYPE_LABELS_PDF[r.tipo]||r.tipo,18,y+5.5);
+  y+=14;
+
+  // Helper functions
+  function sectionHeader(title){
+    doc.setFillColor(...lightGray);
+    doc.rect(14,y,W-28,7,'F');
+    doc.setTextColor(...navy);
+    doc.setFontSize(8);doc.setFont('helvetica','bold');
+    doc.text(title.toUpperCase(),16,y+5);
+    y+=10;
+  }
+  function fieldRow(label,value,col2=false,xOff=0){
+    if(!value||value==='No especificada'||value==='N/A')return;
+    const x=col2?110+xOff:14;
+    const maxW=col2?84:90;
+    doc.setTextColor(...gray);
+    doc.setFontSize(7.5);doc.setFont('helvetica','normal');
+    doc.text(label,x,y);
+    doc.setTextColor(26,32,44);
+    doc.setFontSize(9);doc.setFont('helvetica','bold');
+    const lines=doc.splitTextToSize(String(value),maxW);
+    doc.text(lines,x,y+4.5);
+    if(!col2) y+=4.5+(lines.length*4.5)+2;
+  }
+  function checkPage(){if(y>270){doc.addPage();y=16;}}
+
+  // TIEMPO
+  sectionHeader('Fecha y tiempo');
+  fieldRow('Fecha de registro',`${r.fecha||''} ${r.hora||''}`);
+  fieldRow('Hora aproximada del suceso',r.hora_suceso);
+  fieldRow('Turno',r.turno);
+  checkPage();
+
+  // UBICACIÓN
+  sectionHeader('Ubicación');
+  fieldRow('Posición / Puesto',r.posicion);
+  fieldRow('Zona / Referencia',r.zona);
+  fieldRow('Coordenadas GPS',r.gps);
+  checkPage();
+
+  // AERONAVE / VEHÍCULO
+  if(r.aeronave_tipo||r.operador){
+    sectionHeader(r.tipo==='sancion'?'Vehículo':'Aeronave');
+    fieldRow(r.tipo==='sancion'?'Tipo de vehículo':'Tipo de aeronave',r.aeronave_tipo);
+    fieldRow(r.tipo==='sancion'?'Número de equipo':'Matrícula / Vuelo',r.operador);
+    checkPage();
+  }
+
+  // DESCRIPCIÓN
+  sectionHeader('Descripción de hechos');
+  doc.setFillColor(248,250,252);
+  const descLines=doc.splitTextToSize(r.descripcion||'',W-32);
+  const descH=descLines.length*4.5+6;
+  doc.rect(14,y,W-28,descH,'F');
+  doc.setTextColor(26,32,44);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text(descLines,17,y+4.5);
+  y+=descH+4;
+  checkPage();
+
+  // INVOLUCRADOS
+  if(r.involucrados||r.testigos){
+    sectionHeader('Partes involucradas');
+    fieldRow('Involucrados',r.involucrados);
+    fieldRow('Testigos',r.testigos);
+    checkPage();
+  }
+
+  // SANCIÓN
+  if(r.tipo==='sancion'&&(r.infractor||r.normativa)){
+    sectionHeader('Datos de la infracción (NSOAM)');
+    fieldRow('Nombre del infractor',r.infractor);
+    fieldRow('Tipo de infractor',r.infractor_tipo);
+    fieldRow('Empresa',r.empresa);
+    fieldRow('Normativa infringida',r.normativa);
+    checkPage();
+  }
+
+  // DERRAME
+  if(r.tipo==='derrame'&&r.sustancia){
+    sectionHeader('Datos del derrame (Art. C1-57)');
+    fieldRow('Sustancia',r.sustancia);
+    fieldRow('Volumen aproximado',r.volumen);
+    fieldRow('Acción inmediata tomada',r.derrame_accion);
+    checkPage();
+  }
+
+  // FOD
+  if(r.tipo==='fod'&&r.fod_desc){
+    sectionHeader('Datos del FOD (Art. F4-7)');
+    fieldRow('Descripción del objeto',r.fod_desc);
+    fieldRow('Área encontrada',r.fod_area);
+    fieldRow('Estado de remoción',r.fod_removed);
+    checkPage();
+  }
+
+  // PUENTE
+  if(r.tipo==='puente'&&r.puente_num){
+    sectionHeader('Datos del puente (Art. K8-7)');
+    fieldRow('Número de puente',r.puente_num);
+    fieldRow('Posición asociada',r.puente_pos);
+    fieldRow('Tipo de falla',r.puente_falla);
+    fieldRow('Estado operativo',r.puente_estado);
+    fieldRow('Vuelo / aerolínea afectada',r.puente_vuelo);
+    checkPage();
+  }
+
+  // RESPONSABLE
+  sectionHeader('Responsable del reporte');
+  fieldRow('Oficial de turno',r.oficial);
+  fieldRow('Evidencia fotográfica',r.fotos?`${r.fotos} foto(s) adjunta(s)`:'Sin fotos');
+  fieldRow('Registrado por',r.registradoPor);
+  checkPage();
+
+  // Footer
+  const pages=doc.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFillColor(...navy);
+    doc.rect(0,285,W,12,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(7);doc.setFont('helvetica','normal');
+    doc.text('AIES-SOARG — Control de Incidentes — NSOAM Edición 001/2024',14,292);
+    doc.text(`Página ${i} de ${pages}`,W-14,292,{align:'right'});
+  }
+
+  const fecha=(r.fecha||'reporte').replace(/\//g,'-');
+  const tipo=(r.tipo||'inc').substring(0,3).toUpperCase();
+  doc.save(`REPORTE_${tipo}_${fecha}.pdf`);
+  showToast('PDF generado');
+};
 
 window.exportTxt=function(id){
   const r=reports.find(x=>x.id===id);if(!r)return;
