@@ -824,11 +824,12 @@ function compressImage(base64, maxWidth, quality){
 
 // SUBMIT
 window.submitReport=async()=>{
-  const posEl=document.getElementById('f-pos')||document.getElementById('f-pos-normal');
+  const isSancionType = selType==='sancion';
+  const posEl=isSancionType?document.getElementById('f-pos'):document.getElementById('f-pos-normal');
   const pos=posEl?posEl.value.trim():'';
   const desc=document.getElementById('f-desc').value.trim();
   const oficial=document.getElementById('f-oficial').value.trim();
-  if(!pos||!desc||!oficial||!selType){showToast('Completa los campos obligatorios');return;}
+  if((!pos&&!isSancionType)||!desc||!oficial||!selType){showToast('Completa los campos obligatorios');return;}
   const btn=document.getElementById('btn-submit');
   btn.disabled=true;btn.classList.add('loading');
   document.getElementById('btn-txt').textContent='Guardando...';
@@ -861,7 +862,9 @@ window.submitReport=async()=>{
     fecha:new Date().toLocaleDateString('es-SV'),
     hora:new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'}),
     hora_suceso:document.getElementById('f-hora-suceso').value||'No especificada',
-    posicion:pos||document.getElementById('f-pos-normal')?.value||'', zona:document.getElementById('f-zona')?.value||document.getElementById('f-zona-normal')?.value||'', via_tipo:document.getElementById('f-via-tipo')?.value||'',
+    posicion:pos,
+    zona:isSancionType?(document.getElementById('f-zona')?.value||''):(document.getElementById('f-zona-normal')?.value||''),
+    via_tipo:document.getElementById('f-via-tipo')?.value||'',
     aeronave_tipo:document.getElementById('f-aeronave-tipo').value,
     operador:document.getElementById('f-operador').value,
     descripcion:desc, oficial, turno:turnoLabel,
@@ -877,25 +880,12 @@ window.submitReport=async()=>{
   if(selType==='fod'){r.fod_desc=document.getElementById('f-fod-desc').value;r.fod_area=document.getElementById('f-fod-area').value;r.fod_removed=document.getElementById('f-fod-removed').value;}
   if(selType==='puente'){r.puente_num=document.getElementById('f-puente-num').value;r.puente_pos=document.getElementById('f-puente-pos').value;r.puente_falla=document.getElementById('f-puente-falla').value;r.puente_estado=document.getElementById('f-puente-estado').value;r.puente_vuelo=document.getElementById('f-puente-vuelo').value;}
 
-  // Check size — Firestore limit is ~1MB per doc
-  const rStr=JSON.stringify(r);
-  if(rStr.length>800000){
-    // Too large — save without photos, show warning
-    r.fotoURLs=[];
-    r.fotos=0;
-    r.fotoNota='Fotos no guardadas por tamaño excesivo. Use menos fotos o fotos más pequeñas.';
-  }
   try{
     await addDoc(collection(db,'incidentes'),r);
     resetForm();backToTypes();showToast('Incidente registrado correctamente');
   }catch(e){
     console.error(e);
-    // Try without photos
-    r.fotoURLs=[];r.fotos=0;
-    try{
-      await addDoc(collection(db,'incidentes'),r);
-      resetForm();backToTypes();showToast('Registrado (sin fotos — tamaño excedido)');
-    }catch(e2){showToast('Error al guardar: '+e2.message);}
+    showToast('Error al guardar: '+e.message);
   }
   btn.disabled=false;btn.classList.remove('loading');
   document.getElementById('btn-txt').textContent='Registrar incidente';
@@ -1415,7 +1405,7 @@ window.addPhotos=inp=>{
 window.setFilt=(f,el)=>{filt=f;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderDash();};
 
 function resetForm(){
-  ['f-pos','f-zona','f-operador','f-desc','f-oficial','f-testigos','f-infractor','f-empresa','f-fod-desc','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-pos','f-zona','f-pos-normal','f-zona-normal','f-operador','f-desc','f-oficial','f-testigos','f-infractor','f-empresa','f-fod-desc','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f-infractor-tipo','f-normativa','f-aeronave-tipo','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion','f-zona-select'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
   document.querySelectorAll('#fields-sancion span[onclick]').forEach(s=>{s.style.background='#fff';s.style.color='';s.style.borderColor='var(--border)';});
   selSev='';selTurno='';photoFiles=[];photoURLs=[];invs=[];
