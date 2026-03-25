@@ -188,6 +188,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .rcard-meta{display:flex;gap:10px;flex-wrap:wrap}
 .rcard-meta span{font-size:11px;color:var(--muted)}
 .ubi-chip{padding:4px 12px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;cursor:pointer;font-weight:500;color:var(--text);background:#fff;transition:all .12s}
+.puente-btn{padding:10px 4px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-weight:700;text-align:center;cursor:pointer;color:var(--text);background:#fff;transition:all .12s}
+.puente-btn:hover{border-color:var(--accent);color:var(--accent)}
+.puente-btn.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .ubi-chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .empty{text-align:center;padding:48px 20px}
 .empty p{font-size:14px;color:var(--muted);margin-top:10px}
@@ -523,11 +526,28 @@ input[type=file]{display:none}
         <div id="fields-puente" style="display:none">
           <div class="puente-warn"><strong>NSOAM K8-7 — Prohibido manipular controles</strong>Llamar: 2375-2281 / 7070-8269. Esperar personal AIES-SOARG.</div>
           <div class="spec-box">
-            <div class="spec-label">Datos del puente</div>
-            <div class="row2">
-              <div class="field"><label>Número de puente <span class="req">*</span></label><input type="text" id="f-puente-num" placeholder="Ej: Puente 4B"></div>
-              <div class="field"><label>Posición</label><input type="text" id="f-puente-pos" placeholder="Ej: Pos. 08"></div>
+            <div class="spec-label">Selecciona el número de puente</div>
+            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px">
+              <div onclick="setPuente('1')" id="pb-1" class="puente-btn">1</div>
+              <div onclick="setPuente('2')" id="pb-2" class="puente-btn">2</div>
+              <div onclick="setPuente('3')" id="pb-3" class="puente-btn">3</div>
+              <div onclick="setPuente('4')" id="pb-4" class="puente-btn">4</div>
+              <div onclick="setPuente('5')" id="pb-5" class="puente-btn">5</div>
+              <div onclick="setPuente('6')" id="pb-6" class="puente-btn">6</div>
+              <div onclick="setPuente('7')" id="pb-7" class="puente-btn">7</div>
+              <div onclick="setPuente('8')" id="pb-8" class="puente-btn">8</div>
+              <div onclick="setPuente('9')" id="pb-9" class="puente-btn">9</div>
+              <div onclick="setPuente('10')" id="pb-10" class="puente-btn">10</div>
+              <div onclick="setPuente('11')" id="pb-11" class="puente-btn">11</div>
+              <div onclick="setPuente('12')" id="pb-12" class="puente-btn">12</div>
+              <div onclick="setPuente('13')" id="pb-13" class="puente-btn">13</div>
+              <div onclick="setPuente('14')" id="pb-14" class="puente-btn">14</div>
+              <div onclick="setPuente('15')" id="pb-15" class="puente-btn">15</div>
+              <div onclick="setPuente('16')" id="pb-16" class="puente-btn">16</div>
+              <div onclick="setPuente('17')" id="pb-17" class="puente-btn">17</div>
             </div>
+            <input type="hidden" id="f-puente-num" value="">
+            <input type="hidden" id="f-puente-pos" value="">
             <div class="field"><label>Tipo de falla</label>
               <select id="f-puente-falla"><option value="">Seleccionar...</option><option>Falla mecánica — no se mueve</option><option>Falla eléctrica / sin energía</option><option>Falla hidráulica</option><option>Falla en sistema de nivelación</option><option>Daño estructural visible</option><option>Falla en puerta de cabina</option><option>Falla en sistema de control</option><option>Puente acoplado con motores encendidos (K8-11)</option><option>Otra falla</option></select>
             </div>
@@ -825,11 +845,24 @@ function compressImage(base64, maxWidth, quality){
 // SUBMIT
 window.submitReport=async()=>{
   const isSancionType = selType==='sancion';
-  const posEl=isSancionType?document.getElementById('f-pos'):document.getElementById('f-pos-normal');
-  const pos=posEl?posEl.value.trim():'';
-  const desc=document.getElementById('f-desc').value.trim();
-  const oficial=document.getElementById('f-oficial').value.trim();
-  if((!pos&&!isSancionType)||!desc||!oficial||!selType){showToast('Completa los campos obligatorios');return;}
+  // Read position from correct field
+  const posEl = isSancionType
+    ? document.getElementById('f-pos')
+    : document.getElementById('f-pos-normal');
+  const pos = posEl ? posEl.value.trim() : '';
+  const desc = document.getElementById('f-desc').value.trim();
+  const oficial = document.getElementById('f-oficial').value.trim();
+
+  // Validate required fields per type
+  if(!selType){ showToast('Selecciona una categoría'); return; }
+  if(!desc){ showToast('La descripción de hechos es obligatoria'); return; }
+  if(!oficial){ showToast('El oficial de turno es obligatorio'); return; }
+  if(selType==='puente' && !document.getElementById('f-puente-num').value.trim()){
+    showToast('Selecciona el número de puente'); return;
+  }
+  if(selType!=='sancion' && selType!=='puente' && !pos){
+    showToast('La posición/puesto es obligatoria'); return;
+  }
   const btn=document.getElementById('btn-submit');
   btn.disabled=true;btn.classList.add('loading');
   document.getElementById('btn-txt').textContent='Guardando...';
@@ -862,9 +895,11 @@ window.submitReport=async()=>{
     fecha:new Date().toLocaleDateString('es-SV'),
     hora:new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'}),
     hora_suceso:document.getElementById('f-hora-suceso').value||'No especificada',
-    posicion:pos,
-    zona:isSancionType?(document.getElementById('f-zona')?.value||''):(document.getElementById('f-zona-normal')?.value||''),
-    via_tipo:document.getElementById('f-via-tipo')?.value||'',
+    posicion: pos || (selType==='puente' ? document.getElementById('f-puente-num')?.value||'' : ''),
+    zona: isSancionType
+      ? (document.getElementById('f-zona')?.value||'')
+      : (document.getElementById('f-zona-normal')?.value||''),
+    via_tipo: document.getElementById('f-via-tipo')?.value||'',
     aeronave_tipo:document.getElementById('f-aeronave-tipo').value,
     operador:document.getElementById('f-operador').value,
     descripcion:desc, oficial, turno:turnoLabel,
@@ -1279,6 +1314,16 @@ window.goTab=function(t){
   if(t==='admin'&&isAdmin)renderAdmin();
 };
 
+window.setPuente=function(num){
+  document.getElementById('f-puente-num').value='Puente '+num;
+  document.getElementById('f-puente-pos').value='Posición '+num;
+  // Update all buttons
+  for(let i=1;i<=17;i++){
+    const btn=document.getElementById('pb-'+i);
+    if(btn)btn.classList.toggle('on', i===parseInt(num));
+  }
+};
+
 window.setVia=function(tipo){
   document.getElementById('f-via-tipo').value=tipo;
   const vs=document.getElementById('via-servicio');
@@ -1341,11 +1386,17 @@ window.selectType=function(t){
 
   // Dynamic fields for sancion vs others
   const isSancion = t==='sancion';
+  const isPuente = t==='puente';
   // Show/hide ubicacion blocks
   const ubSancion=document.getElementById('ubicacion-sancion');
   const ubNormal=document.getElementById('ubicacion-normal');
   if(ubSancion)ubSancion.style.display=isSancion?'block':'none';
-  if(ubNormal)ubNormal.style.display=isSancion?'none':'block';
+  if(ubNormal)ubNormal.style.display=(isSancion||isPuente)?'none':'block';
+  // Hide aeronave section for puente
+  const aeronaveSection=document.getElementById('aeronave-section-hd');
+  const aeronaveRow=aeronaveSection?aeronaveSection.nextElementSibling:null;
+  if(aeronaveSection)aeronaveSection.style.display=isPuente?'none':'block';
+  if(aeronaveRow)aeronaveRow.style.display=isPuente?'none':'flex';
   // Section header
   const hd=document.getElementById('aeronave-section-hd');
   if(hd)hd.textContent=isSancion?'Vehículo':'Aeronave';
@@ -1407,6 +1458,9 @@ window.setFilt=(f,el)=>{filt=f;document.querySelectorAll('.chip').forEach(c=>c.c
 function resetForm(){
   ['f-pos','f-zona','f-pos-normal','f-zona-normal','f-operador','f-desc','f-oficial','f-testigos','f-infractor','f-empresa','f-fod-desc','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f-infractor-tipo','f-normativa','f-aeronave-tipo','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion','f-zona-select'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  for(let i=1;i<=17;i++){const b=document.getElementById('pb-'+i);if(b)b.classList.remove('on');}
+  const fpn=document.getElementById('f-puente-num');if(fpn)fpn.value='';
+  const fpp=document.getElementById('f-puente-pos');if(fpp)fpp.value='';
   document.querySelectorAll('#fields-sancion span[onclick]').forEach(s=>{s.style.background='#fff';s.style.color='';s.style.borderColor='var(--border)';});
   selSev='';selTurno='';photoFiles=[];photoURLs=[];invs=[];
   document.getElementById('photo-row').innerHTML='';
