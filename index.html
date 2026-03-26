@@ -188,6 +188,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .rcard-meta{display:flex;gap:10px;flex-wrap:wrap}
 .rcard-meta span{font-size:11px;color:var(--muted)}
 .ubi-chip{padding:4px 12px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;cursor:pointer;font-weight:500;color:var(--text);background:#fff;transition:all .12s}
+.ubi-chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.empresa-chip{padding:4px 12px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;cursor:pointer;font-weight:500;color:var(--text);background:#fff;transition:all .12s}
 .puente-btn{padding:10px 4px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-weight:700;text-align:center;cursor:pointer;color:var(--text);background:#fff;transition:all .12s}
 .puente-btn:hover{border-color:var(--accent);color:var(--accent)}
 .puente-btn.on{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -305,7 +307,7 @@ input[type=file]{display:none}
     <div class="tab" onclick="goTab('dashboard')">Dashboard</div>
     <div class="tab" onclick="goTab('sanciones')">Sanciones</div>
     <div class="tab" onclick="goTab('derrames')">Derrames/FOD</div>
-    <div class="tab" onclick="goTab('protocolos')">Protocolos</div>
+
   </div>
 
   <!-- NUEVO -->
@@ -330,12 +332,43 @@ input[type=file]{display:none}
       <div class="form-body">
         <div id="type-indicator" style="display:inline-flex;align-items:center;gap:6px;background:#EEF4FF;padding:5px 12px;border-radius:20px;margin-bottom:14px;font-size:12px;font-weight:600;color:var(--accent2)"></div>
 
-        <div class="section-hd">Ubicación</div>
+        <!-- ══════════════════════════════════════════
+             UBICACIÓN — POSICIÓN (botones 1-20)
+             Todos los tipos usan esto excepto SANCIÓN
+        ══════════════════════════════════════════ -->
+        <div id="ubicacion-posicion">
+          <div class="section-hd">Posición</div>
+          <div class="spec-label" style="margin-bottom:8px;padding:0">Selecciona la posición de estacionamiento</div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px">
+            <div onclick="setPosicion('1')" id="pos-btn-1" class="puente-btn">1</div>
+            <div onclick="setPosicion('2')" id="pos-btn-2" class="puente-btn">2</div>
+            <div onclick="setPosicion('3')" id="pos-btn-3" class="puente-btn">3</div>
+            <div onclick="setPosicion('4')" id="pos-btn-4" class="puente-btn">4</div>
+            <div onclick="setPosicion('5')" id="pos-btn-5" class="puente-btn">5</div>
+            <div onclick="setPosicion('6')" id="pos-btn-6" class="puente-btn">6</div>
+            <div onclick="setPosicion('7')" id="pos-btn-7" class="puente-btn">7</div>
+            <div onclick="setPosicion('8')" id="pos-btn-8" class="puente-btn">8</div>
+            <div onclick="setPosicion('9')" id="pos-btn-9" class="puente-btn">9</div>
+            <div onclick="setPosicion('10')" id="pos-btn-10" class="puente-btn">10</div>
+            <div onclick="setPosicion('11')" id="pos-btn-11" class="puente-btn">11</div>
+            <div onclick="setPosicion('12')" id="pos-btn-12" class="puente-btn">12</div>
+            <div onclick="setPosicion('13')" id="pos-btn-13" class="puente-btn">13</div>
+            <div onclick="setPosicion('14')" id="pos-btn-14" class="puente-btn">14</div>
+            <div onclick="setPosicion('15')" id="pos-btn-15" class="puente-btn">15</div>
+            <div onclick="setPosicion('16')" id="pos-btn-16" class="puente-btn">16</div>
+            <div onclick="setPosicion('17')" id="pos-btn-17" class="puente-btn">17</div>
+            <div onclick="setPosicion('18')" id="pos-btn-18" class="puente-btn">18</div>
+            <div onclick="setPosicion('19')" id="pos-btn-19" class="puente-btn">19</div>
+            <div onclick="setPosicion('20')" id="pos-btn-20" class="puente-btn">20</div>
+          </div>
+          <input type="hidden" id="f-pos-normal" value="">
+        </div>
 
-        <!-- Ubicacion para SANCION -->
+        <!-- UBICACIÓN SANCIÓN — calle perimetral/servicio -->
         <div id="ubicacion-sancion" style="display:none">
+          <div class="section-hd">Ubicación</div>
           <div class="field">
-            <label>Tipo de vía <span class="req">*</span></label>
+            <label>Tipo de vía</label>
             <div style="display:flex;gap:8px;margin-bottom:10px">
               <div id="via-servicio" onclick="setVia('servicio')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;background:#fff;transition:all .15s">
                 <div style="font-size:12px;font-weight:700;color:var(--text)">Calle de servicio</div>
@@ -346,7 +379,6 @@ input[type=file]{display:none}
                 <div style="font-size:10px;color:var(--muted);margin-top:2px">Perímetro del aeropuerto</div>
               </div>
             </div>
-            <input type="hidden" id="f-via-tipo" value="">
           </div>
           <div class="field">
             <label>Ubicación específica</label>
@@ -367,40 +399,70 @@ input[type=file]{display:none}
               <span onclick="setUbicacion('Perimetral Interna Norte')" class="ubi-chip">Interna Norte</span>
               <span onclick="setUbicacion('Perimetral Interna Sur')" class="ubi-chip">Interna Sur</span>
             </div>
-            <input type="text" id="f-pos" placeholder="O describe la ubicación exacta" style="margin-top:4px">
+            <input type="text" id="f-pos" placeholder="O describe la ubicación exacta">
           </div>
           <div class="field">
             <label>Entre posiciones / referencia</label>
-            <input type="text" id="f-zona" placeholder="Ej: Entre posición 08 y 09, frente a puente 3">
+            <input type="text" id="f-zona" placeholder="Ej: Entre posición 08 y 09">
           </div>
         </div>
 
-        <!-- Ubicacion para otros tipos -->
-        <div id="ubicacion-normal">
-          <div class="row2">
-            <div class="field">
-              <label>Posición / Puesto <span class="req">*</span></label>
-              <input type="text" id="f-pos-normal" placeholder="Ej: Posición 12">
-            </div>
-            <div class="field">
-              <label>Puente / Zona</label>
-              <input type="text" id="f-zona-normal" placeholder="Ej: Puente 3A">
-            </div>
-          </div>
-        </div>
         <div class="gps-bar loading" id="gps-bar">
           <div class="gps-dot"></div>
           <span class="gps-txt" id="gps-txt">Obteniendo coordenadas...</span>
           <button class="gps-btn" onclick="requestGPS()">Reintentar</button>
         </div>
 
-        <div class="section-hd" id="aeronave-section-hd">Aeronave</div>
-        <div class="row2">
-          <div class="field">
-            <label id="label-aeronave-tipo">Tipo de aeronave</label>
-            <select id="f-aeronave-tipo">
-              <option value="">Seleccionar...</option>
-              <optgroup label="Vehículos GSE" id="grp-gse">
+        <!-- ══════════════════════════════════════════
+             AERONAVE — Solo para accidente e incidente
+        ══════════════════════════════════════════ -->
+        <div id="section-aeronave" style="display:none">
+          <div class="section-hd">Aeronave involucrada (si aplica)</div>
+          <div class="row2">
+            <div class="field">
+              <label>Tipo de aeronave</label>
+              <select id="f-aeronave-tipo">
+                <option value="">Seleccionar...</option>
+                <optgroup label="Airbus" id="grp-airbus">
+                  <option>A318</option><option>A319</option><option>A320</option><option>A321</option>
+                  <option>A220-100</option><option>A220-300</option>
+                  <option>A330-200</option><option>A330-300</option>
+                  <option>A350-900</option><option>A350-1000</option><option>A380</option>
+                </optgroup>
+                <optgroup label="Boeing" id="grp-boeing">
+                  <option>B737-700</option><option>B737-800</option><option>B737-900</option>
+                  <option>B737 MAX 8</option><option>B737 MAX 9</option>
+                  <option>B757-200</option><option>B757-300</option>
+                  <option>B767-300</option><option>B767-400</option>
+                  <option>B777-200</option><option>B777-300</option>
+                  <option>B787-8</option><option>B787-9</option><option>B787-10</option>
+                </optgroup>
+                <optgroup label="Embraer" id="grp-embraer">
+                  <option>E170</option><option>E175</option><option>E190</option><option>E195</option>
+                  <option>E190-E2</option><option>E195-E2</option>
+                </optgroup>
+                <optgroup label="ATR" id="grp-atr">
+                  <option>ATR 42</option><option>ATR 72</option>
+                </optgroup>
+                <optgroup label="Otro" id="grp-otro-ac">
+                  <option>Carguero</option><option>Aviación general</option><option>Otro</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="field"><label>Matrícula / Vuelo</label><input type="text" id="f-operador" placeholder="Ej: N1234 / AV204"></div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+             VEHÍCULO GSE — Para accidente, incidente
+        ══════════════════════════════════════════ -->
+        <div id="section-vehiculo" style="display:none">
+          <div class="section-hd">Vehículo / Equipo GSE involucrado (si aplica)</div>
+          <div class="row2">
+            <div class="field">
+              <label>Tipo de equipo</label>
+              <select id="f-vehiculo-tipo">
+                <option value="">Seleccionar...</option>
                 <option>Tractor de remolque de equipaje</option>
                 <option>Tractor de remolque de aeronave</option>
                 <option>Banda transportadora de equipaje</option>
@@ -414,39 +476,15 @@ input[type=file]{display:none}
                 <option>Motocicleta</option>
                 <option>Vehículo de supervisión</option>
                 <option>Otro vehículo GSE</option>
-              </optgroup>
-              <optgroup label="Airbus" id="grp-airbus">
-                <option>A318</option><option>A319</option><option>A320</option><option>A321</option>
-                <option>A220-100</option><option>A220-300</option>
-                <option>A330-200</option><option>A330-300</option>
-                <option>A350-900</option><option>A350-1000</option>
-                <option>A380</option>
-              </optgroup>
-              <optgroup label="Boeing" id="grp-boeing">
-                <option>B737-700</option><option>B737-800</option><option>B737-900</option>
-                <option>B737 MAX 8</option><option>B737 MAX 9</option>
-                <option>B757-200</option><option>B757-300</option>
-                <option>B767-300</option><option>B767-400</option>
-                <option>B777-200</option><option>B777-300</option>
-                <option>B787-8</option><option>B787-9</option><option>B787-10</option>
-              </optgroup>
-              <optgroup label="Embraer" id="grp-embraer">
-                <option>E170</option><option>E175</option><option>E190</option><option>E195</option>
-                <option>E190-E2</option><option>E195-E2</option>
-              </optgroup>
-              <optgroup label="ATR" id="grp-atr">
-                <option>ATR 42</option><option>ATR 72</option>
-              </optgroup>
-              <optgroup label="Otro" id="grp-otro-ac">
-                <option>Carguero</option><option>Aviación general</option><option>Otro</option>
-              </optgroup>
-            </select>
+              </select>
+            </div>
+            <div class="field"><label>Número de equipo</label><input type="text" id="f-vehiculo-num" placeholder="Ej: GSE-042"></div>
           </div>
-          <div class="field"><label id="label-matricula">Matrícula / Vuelo</label><input type="text" id="f-operador" placeholder="Ej: N1234 / AV204" id="f-operador"></div>
         </div>
 
         <div class="section-hd">Detalles</div>
 
+        <!-- SANCIÓN -->
         <div id="fields-sancion" style="display:none">
           <div class="spec-box">
             <div class="spec-label">Datos del infractor</div>
@@ -458,19 +496,40 @@ input[type=file]{display:none}
               <div class="field">
                 <label>Empresa</label>
                 <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">
-                  <span onclick="setEmpresa('Avianca')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">Avianca</span>
-                  <span onclick="setEmpresa('ADES')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">ADES</span>
-                  <span onclick="setEmpresa('AirSupport')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">AirSupport</span>
-                  <span onclick="setEmpresa('Volaris')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">Volaris</span>
-                  <span onclick="setEmpresa('AvioTec')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">AvioTec</span>
-                  <span onclick="setEmpresa('Aeroman')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">Aeroman</span>
-                  <span onclick="setEmpresa('CEPA')" style="padding:3px 10px;border:1px solid var(--border);border-radius:20px;font-size:10px;cursor:pointer;background:#fff;font-weight:500">CEPA</span>
+                  <span onclick="setEmpresa('Avianca')" class="empresa-chip">Avianca</span>
+                  <span onclick="setEmpresa('ADES')" class="empresa-chip">ADES</span>
+                  <span onclick="setEmpresa('AirSupport')" class="empresa-chip">AirSupport</span>
+                  <span onclick="setEmpresa('Volaris')" class="empresa-chip">Volaris</span>
+                  <span onclick="setEmpresa('AvioTec')" class="empresa-chip">AvioTec</span>
+                  <span onclick="setEmpresa('Aeroman')" class="empresa-chip">Aeroman</span>
+                  <span onclick="setEmpresa('CEPA')" class="empresa-chip">CEPA</span>
                 </div>
                 <input type="text" id="f-empresa" placeholder="O escribe el nombre">
               </div>
             </div>
             <div class="field">
-              <label>Normativa infringida <span class="art">(NSOAM)</span></label>
+              <label>Tipo de vehículo infractor</label>
+              <select id="f-aeronave-tipo">
+                <option value="">Seleccionar...</option>
+                <option>Tractor de remolque de equipaje</option>
+                <option>Tractor de remolque de aeronave</option>
+                <option>Banda transportadora de equipaje</option>
+                <option>Loader / Elevador de carga</option>
+                <option>Camión de catering</option>
+                <option>Camión de combustible</option>
+                <option>Camión de limpieza</option>
+                <option>Escalera de pasajeros</option>
+                <option>GPU / Generador eléctrico</option>
+                <option>Bicicleta</option>
+                <option>Motocicleta</option>
+                <option>Vehículo de supervisión</option>
+                <option>Peatón / Sin vehículo</option>
+                <option>Otro vehículo GSE</option>
+              </select>
+            </div>
+            <div class="field"><label>Número de equipo</label><input type="text" id="f-operador" placeholder="Ej: GSE-042"></div>
+            <div class="field">
+              <label>Normativa infringida (NSOAM)</label>
               <select id="f-normativa">
                 <option value="">Seleccionar...</option>
                 <option value="C1-21 — Alcohol o drogas en zona restringida">C1-21 — Alcohol o drogas</option>
@@ -499,22 +558,24 @@ input[type=file]{display:none}
           </div>
         </div>
 
+        <!-- DERRAME -->
         <div id="fields-derrame" style="display:none">
           <div class="row2">
-            <div class="field"><label>Sustancia <span class="art">(C1-57)</span></label>
+            <div class="field"><label>Sustancia (C1-57)</label>
               <select id="f-sustancia"><option value="">Seleccionar...</option><option>Combustible Jet-A1</option><option>Combustible AVGAS</option><option>Fluido hidráulico</option><option>Aceite de motor</option><option>Otra sustancia</option></select>
             </div>
             <div class="field"><label>Volumen aprox.</label><input type="text" id="f-volumen" placeholder="Ej: 5 litros"></div>
           </div>
-          <div class="field"><label>Acción inmediata</label>
+          <div class="field"><label>Acción inmediata tomada</label>
             <select id="f-derrame-accion"><option value="">Seleccionar...</option><option>SEI notificado y en camino</option><option>Zona acordonada</option><option>Vehículos retirados del área</option><option>Operación paralizada por seguridad</option></select>
           </div>
         </div>
 
+        <!-- FOD -->
         <div id="fields-fod" style="display:none">
           <div class="row2">
-            <div class="field"><label>Objeto <span class="art">(F4-7)</span></label><input type="text" id="f-fod-desc" placeholder="Ej: tornillo 3cm"></div>
-            <div class="field"><label>Área</label>
+            <div class="field"><label>Descripción del objeto (F4-7)</label><input type="text" id="f-fod-desc" placeholder="Ej: tornillo 3cm"></div>
+            <div class="field"><label>Área encontrada</label>
               <select id="f-fod-area"><option value="">Seleccionar...</option><option>Área de maniobras</option><option>Área de movimiento</option><option>Plataforma</option><option>Puente de abordaje</option><option>Calle de rodaje</option><option>Pista</option></select>
             </div>
           </div>
@@ -523,11 +584,12 @@ input[type=file]{display:none}
           </div>
         </div>
 
+        <!-- PUENTE -->
         <div id="fields-puente" style="display:none">
-          <div class="puente-warn"><strong>NSOAM K8-7 — Prohibido manipular controles</strong>Llamar: 2375-2281 / 7070-8269. Esperar personal AIES-SOARG.</div>
+          <div class="puente-warn"><strong>NSOAM K8-7 — Prohibido manipular controles</strong> Llamar: 2375-2281 / 7070-8269. Esperar personal AIES-SOARG.</div>
           <div class="spec-box">
             <div class="spec-label">Selecciona el número de puente</div>
-            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px">
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px">
               <div onclick="setPuente('1')" id="pb-1" class="puente-btn">1</div>
               <div onclick="setPuente('2')" id="pb-2" class="puente-btn">2</div>
               <div onclick="setPuente('3')" id="pb-3" class="puente-btn">3</div>
@@ -545,9 +607,22 @@ input[type=file]{display:none}
               <div onclick="setPuente('15')" id="pb-15" class="puente-btn">15</div>
               <div onclick="setPuente('16')" id="pb-16" class="puente-btn">16</div>
               <div onclick="setPuente('17')" id="pb-17" class="puente-btn">17</div>
+              <div onclick="setPuente('18')" id="pb-18" class="puente-btn">18</div>
+              <div onclick="setPuente('19')" id="pb-19" class="puente-btn">19</div>
+              <div onclick="setPuente('19A')" id="pb-19A" class="puente-btn" style="font-size:11px">19A</div>
+              <div onclick="setPuente('20')" id="pb-20" class="puente-btn">20</div>
             </div>
             <input type="hidden" id="f-puente-num" value="">
             <input type="hidden" id="f-puente-pos" value="">
+            <div class="field">
+              <label>Marca del puente</label>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
+                <div onclick="setMarcaPuente('ADELTE')" id="marca-ADELTE" class="puente-btn" style="font-size:11px">ADELTE</div>
+                <div onclick="setMarcaPuente('Thyssen')" id="marca-Thyssen" class="puente-btn" style="font-size:11px">Thyssen</div>
+                <div onclick="setMarcaPuente('TIANDA')" id="marca-TIANDA" class="puente-btn" style="font-size:11px">TIANDA</div>
+              </div>
+              <input type="hidden" id="f-puente-marca" value="">
+            </div>
             <div class="field"><label>Tipo de falla</label>
               <select id="f-puente-falla"><option value="">Seleccionar...</option><option>Falla mecánica — no se mueve</option><option>Falla eléctrica / sin energía</option><option>Falla hidráulica</option><option>Falla en sistema de nivelación</option><option>Daño estructural visible</option><option>Falla en puerta de cabina</option><option>Falla en sistema de control</option><option>Puente acoplado con motores encendidos (K8-11)</option><option>Otra falla</option></select>
             </div>
@@ -566,26 +641,16 @@ input[type=file]{display:none}
             <div class="sev-opt" id="sev-alta" onclick="setSev('alta')">Alta</div>
           </div>
         </div>
-        <div class="field">
-          <label>Involucrados</label>
-          <div class="inv-chips">
-            <div class="inv-chip" onclick="toggleInv(this)">Aeronave</div>
-            <div class="inv-chip" onclick="toggleInv(this)">Vehículo GSE</div>
-            <div class="inv-chip" onclick="toggleInv(this)">Pasajero</div>
-            <div class="inv-chip" onclick="toggleInv(this)">Personal rampa</div>
-            <div class="inv-chip" onclick="toggleInv(this)">Conductor externo</div>
-          </div>
-        </div>
-        <div class="field"><label>Descripción de hechos <span class="req">*</span></label><textarea id="f-desc" placeholder="Describir cronológicamente lo ocurrido..."></textarea></div>
+
+        <div class="field"><label>Descripción de hechos <span class="req">*</span></label><textarea id="f-desc" placeholder="Describir cronológicamente lo ocurrido, condiciones del área, acciones tomadas..."></textarea></div>
 
         <div class="section-hd">Evidencia fotográfica</div>
         <div class="photo-zone" onclick="document.getElementById('f-photos').click()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <p>Tomar o subir foto(s)</p>
+          <p>Tomar o subir foto(s) — máx. 3</p>
         </div>
-        <input type="file" id="f-photos" accept="image/*" capture="environment" multiple onchange="addPhotos(this)">
         <div class="upload-progress" id="upload-progress">
-          <div class="progress-txt" id="progress-txt">Subiendo fotos...</div>
+          <div class="progress-txt" id="progress-txt">Procesando fotos...</div>
           <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
         </div>
         <div class="photo-row" id="photo-row"></div>
@@ -603,7 +668,6 @@ input[type=file]{display:none}
           <div class="field"><label>Oficial de turno <span class="req">*</span></label><input type="text" id="f-oficial" placeholder="Nombre"></div>
           <div class="field"><label>Hora aprox. del suceso</label><input type="time" id="f-hora-suceso"></div>
         </div>
-        <div class="field"><label>Testigos (opcional)</label><input type="text" id="f-testigos" placeholder="Nombres separados por coma"></div>
         <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:16px">
           <button class="btn-submit" id="btn-submit" onclick="submitReport()" style="margin-top:0">
             <div class="spinner"></div><span id="btn-txt">Registrar incidente</span>
@@ -679,16 +743,6 @@ input[type=file]{display:none}
   </div>
 
   <!-- PROTOCOLOS -->
-  <div class="view" id="view-protocolos">
-    <div class="page-pad">
-      <div class="section-hd">Protocolos de respuesta — NSOAM</div>
-      <div class="emer-card red"><div class="emer-card-title">Derrame de combustible / hidráulico</div><div class="emer-card-art">Art. C1-57</div><ul class="emer-steps"><li>Informar inmediatamente a SEI y Centro de Coordinación de Oficiales de Rampa</li><li>No pasar vehículos sobre el combustible derramado</li><li>Vehículo encendido: retirarlo con motor encendido</li><li>Vehículo apagado: empujarlo o remolcarlo fuera del área</li><li>Acordonar la zona y restringir circulación</li></ul><div class="emer-tel"><a href="tel:23752300">SEI: 2375-2300</a><a href="tel:23752281">Rampa: 2375-2281</a><a href="tel:70708269">7070-8269</a><a href="tel:70708074">Jefatura: 7070-8074</a></div></div>
-      <div class="emer-card amber"><div class="emer-card-title">Accidente / Daño material</div><div class="emer-card-art">Art. J7-1 a J7-6</div><ul class="emer-steps"><li>Comunicar al Centro de Coordinación de Oficiales de Rampa</li><li>Involucrados deben permanecer en el lugar</li><li>No mover vehículos hasta llegada de Oficiales y PNC</li><li>Reportar lesionados, derrame, incendio u otra circunstancia</li></ul><div class="emer-tel"><a href="tel:23752281">Rampa: 2375-2281</a><a href="tel:70708074">Jefatura: 7070-8074</a></div></div>
-      <div class="emer-card blue"><div class="emer-card-title">Falla de puente de abordaje</div><div class="emer-card-art">Art. K8-7</div><ul class="emer-steps"><li>Llamar al Oficial de Rampa inmediatamente</li><li>PROHIBIDO manipular controles hasta llegada de personal</li><li>Verificar que aeronave no tenga motores encendidos con puente acoplado (K8-11)</li></ul><div class="emer-tel"><a href="tel:23752281">2375-2281</a><a href="tel:70708269">7070-8269</a></div></div>
-      <div class="emer-card green"><div class="emer-card-title">FOD — Objeto foráneo</div><div class="emer-card-art">Art. F4-7, C1-37, J7-7</div><ul class="emer-steps"><li>Todo personal obligado a colaborar</li><li>Remover inmediatamente y depositar en contenedor FOD</li><li>Bulto abandonado: comunicar a Seguridad</li><li>Mercancía peligrosa: distancia y llamar a SEI</li></ul><div class="emer-tel"><a href="tel:23752281">Rampa: 2375-2281</a><a href="tel:23752300">SEI: 2375-2300</a></div></div>
-    </div>
-  </div>
-
   <!-- ADMIN -->
   <div class="view" id="view-admin">
     <div class="page-pad">
@@ -821,7 +875,7 @@ function subscribeReports(){
     reports=snap.docs.map(d=>({id:d.id,...d.data()}));
     updateBadge();updateTypeCounts();
     const active=document.querySelector('.tab.active');
-    if(active){const tabs=['nuevo','dashboard','sanciones','derrames','protocolos','admin'];const idx=Array.from(document.querySelectorAll('.tab')).indexOf(active);const t=tabs[idx];if(t==='dashboard')renderDash();if(t==='sanciones')renderSanciones();if(t==='derrames')renderDerrames();if(t==='admin')renderAdmin();}
+    if(active){const tabs=['nuevo','dashboard','sanciones','derrames','protocolos','admin'];const idx=Array.from(document.querySelectorAll('.tab')).indexOf(active);const t=tabs[idx];if(t==='dashboard')renderDash();if(t==='sanciones')renderSanciones();if(t==='derrames')renderDerrames();if(t==='admin'&&isAdmin)renderAdmin();}
     document.getElementById('sync-dot').className='sync-dot';
   },()=>{document.getElementById('sync-dot').className='sync-dot offline';});
 }
@@ -845,7 +899,7 @@ function compressImage(base64, maxWidth, quality){
 // SUBMIT
 window.submitReport=async()=>{
   const isSancionType = selType==='sancion';
-  // Read position from correct field
+  const isPuenteType = selType==='puente';
   const posEl = isSancionType
     ? document.getElementById('f-pos')
     : document.getElementById('f-pos-normal');
@@ -857,11 +911,11 @@ window.submitReport=async()=>{
   if(!selType){ showToast('Selecciona una categoría'); return; }
   if(!desc){ showToast('La descripción de hechos es obligatoria'); return; }
   if(!oficial){ showToast('El oficial de turno es obligatorio'); return; }
-  if(selType==='puente' && !document.getElementById('f-puente-num').value.trim()){
+  if(isPuenteType && !document.getElementById('f-puente-num').value.trim()){
     showToast('Selecciona el número de puente'); return;
   }
-  if(selType!=='sancion' && selType!=='puente' && !pos){
-    showToast('La posición/puesto es obligatoria'); return;
+  if(!isSancionType && !isPuenteType && !pos){
+    showToast('Selecciona la posición de estacionamiento'); return;
   }
   const btn=document.getElementById('btn-submit');
   btn.disabled=true;btn.classList.add('loading');
@@ -895,11 +949,12 @@ window.submitReport=async()=>{
     fecha:new Date().toLocaleDateString('es-SV'),
     hora:new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'}),
     hora_suceso:document.getElementById('f-hora-suceso').value||'No especificada',
-    posicion: pos || (selType==='puente' ? document.getElementById('f-puente-num')?.value||'' : ''),
-    zona: isSancionType
-      ? (document.getElementById('f-zona')?.value||'')
-      : (document.getElementById('f-zona-normal')?.value||''),
+    posicion: pos || (isPuenteType ? (document.getElementById('f-puente-num')?.value||'') : ''),
+    zona: isSancionType ? (document.getElementById('f-zona')?.value||'') : '',
     via_tipo: document.getElementById('f-via-tipo')?.value||'',
+    vehiculo_tipo: document.getElementById('f-vehiculo-tipo')?.value||'',
+    vehiculo_num: document.getElementById('f-vehiculo-num')?.value||'',
+    puente_marca: document.getElementById('f-puente-marca')?.value||'',
     aeronave_tipo:document.getElementById('f-aeronave-tipo').value,
     operador:document.getElementById('f-operador').value,
     descripcion:desc, oficial, turno:turnoLabel,
@@ -1069,7 +1124,10 @@ window.openDetail=function(id){
     ['Fecha',`${r.fecha} ${r.hora}`],['Hora suceso',r.hora_suceso],
     ['Turno',r.turno],['Posición',r.posicion],['Zona',r.zona],
     r.aeronave_tipo?['Tipo aeronave',r.aeronave_tipo]:null,
-    ['Matrícula/Vuelo',r.operador],['Oficial',r.oficial],
+    r.operador?['Matrícula/Vuelo',r.operador]:null,
+    r.vehiculo_tipo?['Tipo vehículo GSE',r.vehiculo_tipo]:null,
+    r.vehiculo_num?['Número de equipo',r.vehiculo_num]:null,
+    r.puente_marca?['Marca del puente',r.puente_marca]:null,['Oficial',r.oficial],
     ['Involucrados',r.involucrados],['Testigos',r.testigos],['GPS',r.gps],
     ['Registrado por',r.registradoPor],
     r.infractor?['Infractor',r.infractor]:null,
@@ -1305,13 +1363,29 @@ window.requestGPS=function(){
 
 // TABS
 window.goTab=function(t){
-  const all=['nuevo','dashboard','sanciones','derrames','protocolos','admin'];
+  const all=['nuevo','dashboard','sanciones','derrames','admin'];
   all.forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.classList.toggle('active',v===t);});
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',all[i]===t));
   if(t==='dashboard')renderDash();
   if(t==='sanciones')renderSanciones();
   if(t==='derrames')renderDerrames();
   if(t==='admin'&&isAdmin)renderAdmin();
+};
+
+window.setPosicion=function(num){
+  document.getElementById('f-pos-normal').value='Posición '+num;
+  for(let i=1;i<=20;i++){
+    const b=document.getElementById('pos-btn-'+i);
+    if(b)b.classList.toggle('on', String(i)===String(num));
+  }
+};
+
+window.setMarcaPuente=function(marca){
+  document.getElementById('f-puente-marca').value=marca;
+  ['ADELTE','Thyssen','TIANDA'].forEach(m=>{
+    const b=document.getElementById('marca-'+m);
+    if(b)b.classList.toggle('on', m===marca);
+  });
 };
 
 window.setPuente=function(num){
@@ -1364,11 +1438,11 @@ window.setUbicacion=function(val){
 
 window.setEmpresa=function(name){
   document.getElementById('f-empresa').value=name;
-  // highlight active chip
-  document.querySelectorAll('#fields-sancion span[onclick]').forEach(s=>{
-    s.style.background=s.getAttribute('onclick').includes(name)?'var(--navy)':'#fff';
-    s.style.color=s.getAttribute('onclick').includes(name)?'#fff':'';
-    s.style.borderColor=s.getAttribute('onclick').includes(name)?'var(--navy)':'var(--border)';
+  document.querySelectorAll('.empresa-chip').forEach(s=>{
+    const isActive=s.textContent.trim()===name;
+    s.style.background=isActive?'var(--navy)':'#fff';
+    s.style.color=isActive?'#fff':'var(--text)';
+    s.style.borderColor=isActive?'var(--navy)':'var(--border)';
   });
 };
 
@@ -1377,50 +1451,42 @@ window.selectType=function(t){
   document.getElementById('step-tipo').style.display='none';
   document.getElementById('step-form').style.display='block';
   document.getElementById('type-indicator').textContent=TYPE_LABELS[t];
-  ['fields-sancion','fields-derrame','fields-fod','fields-puente'].forEach(id=>document.getElementById(id).style.display='none');
-  ['banner-derrame','banner-fod'].forEach(id=>document.getElementById(id).style.display='none');
-  if(t==='sancion')document.getElementById('fields-sancion').style.display='block';
+
+  // Hide all specific fields and banners
+  ['fields-sancion','fields-derrame','fields-fod','fields-puente'].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.style.display='none';
+  });
+  ['banner-derrame','banner-fod'].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.style.display='none';
+  });
+
+  // Show type-specific fields
+  if(t==='sancion') document.getElementById('fields-sancion').style.display='block';
   if(t==='derrame'){document.getElementById('fields-derrame').style.display='block';document.getElementById('banner-derrame').style.display='flex';}
   if(t==='fod'){document.getElementById('fields-fod').style.display='block';document.getElementById('banner-fod').style.display='flex';}
-  if(t==='puente')document.getElementById('fields-puente').style.display='block';
+  if(t==='puente') document.getElementById('fields-puente').style.display='block';
 
-  // Dynamic fields for sancion vs others
-  const isSancion = t==='sancion';
-  const isPuente = t==='puente';
-  // Show/hide ubicacion blocks
+  // Ubicacion: sancion uses calle chips, others use posicion buttons
   const ubSancion=document.getElementById('ubicacion-sancion');
-  const ubNormal=document.getElementById('ubicacion-normal');
-  if(ubSancion)ubSancion.style.display=isSancion?'block':'none';
-  if(ubNormal)ubNormal.style.display=(isSancion||isPuente)?'none':'block';
-  // Hide aeronave section for puente
-  const aeronaveSection=document.getElementById('aeronave-section-hd');
-  const aeronaveRow=aeronaveSection?aeronaveSection.nextElementSibling:null;
-  if(aeronaveSection)aeronaveSection.style.display=isPuente?'none':'block';
-  if(aeronaveRow)aeronaveRow.style.display=isPuente?'none':'flex';
-  // Section header
-  const hd=document.getElementById('aeronave-section-hd');
-  if(hd)hd.textContent=isSancion?'Vehículo':'Aeronave';
-  // Labels
-  const lbTipo=document.getElementById('label-aeronave-tipo');
-  if(lbTipo)lbTipo.textContent=isSancion?'Tipo de vehículo':'Tipo de aeronave';
-  const lbMat=document.getElementById('label-matricula');
-  if(lbMat)lbMat.textContent=isSancion?'Número de equipo':'Matrícula / Vuelo';
-  const inpOp=document.getElementById('f-operador');
-  if(inpOp)inpOp.placeholder=isSancion?'Ej: GSE-042':'Ej: N1234 / AV204';
-  // Show/hide optgroups based on type
-  const gse=document.getElementById('grp-gse');
-  const acGroups=['grp-airbus','grp-boeing','grp-embraer','grp-atr','grp-otro-ac'];
-  if(gse) gse.style.display=isSancion?'':'none';
-  acGroups.forEach(id=>{const g=document.getElementById(id);if(g)g.style.display=isSancion?'none':'';});
-  const sel=document.getElementById('f-aeronave-tipo');
-  if(sel) sel.selectedIndex=0;
-};
-
-window.confirmReset=function(){
-  if(confirm('¿Limpiar todos los campos del formulario?')){
-    resetForm();
-    showToast('Formulario limpiado');
+  const ubPos=document.getElementById('ubicacion-posicion');
+  if(t==='sancion'){
+    if(ubSancion)ubSancion.style.display='block';
+    if(ubPos)ubPos.style.display='none';
+  } else if(t==='puente'){
+    // puente uses its own buttons, no posicion selector needed
+    if(ubSancion)ubSancion.style.display='none';
+    if(ubPos)ubPos.style.display='none';
+  } else {
+    if(ubSancion)ubSancion.style.display='none';
+    if(ubPos)ubPos.style.display='block';
   }
+
+  // Aeronave + GSE sections: only for accidente and incidente
+  const secAeronave=document.getElementById('section-aeronave');
+  const secVehiculo=document.getElementById('section-vehiculo');
+  const showAcGse=(t==='accidente'||t==='incidente');
+  if(secAeronave)secAeronave.style.display=showAcGse?'block':'none';
+  if(secVehiculo)secVehiculo.style.display=showAcGse?'block':'none';
 };
 
 window.backToTypes=function(){
@@ -1456,11 +1522,16 @@ window.addPhotos=inp=>{
 window.setFilt=(f,el)=>{filt=f;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderDash();};
 
 function resetForm(){
-  ['f-pos','f-zona','f-pos-normal','f-zona-normal','f-operador','f-desc','f-oficial','f-testigos','f-infractor','f-empresa','f-fod-desc','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['f-infractor-tipo','f-normativa','f-aeronave-tipo','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion','f-zona-select'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
-  for(let i=1;i<=17;i++){const b=document.getElementById('pb-'+i);if(b)b.classList.remove('on');}
-  const fpn=document.getElementById('f-puente-num');if(fpn)fpn.value='';
-  const fpp=document.getElementById('f-puente-pos');if(fpp)fpp.value='';
+  ['f-pos','f-zona','f-pos-normal','f-operador','f-desc','f-oficial','f-infractor','f-empresa','f-fod-desc','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso','f-vehiculo-num','f-puente-marca'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-infractor-tipo','f-normativa','f-aeronave-tipo','f-vehiculo-tipo','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  // Reset puente buttons
+  ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','19A','20'].forEach(n=>{const b=document.getElementById('pb-'+n);if(b)b.classList.remove('on');});
+  // Reset posicion buttons
+  for(let i=1;i<=20;i++){const b=document.getElementById('pos-btn-'+i);if(b)b.classList.remove('on');}
+  // Reset marca puente
+  ['ADELTE','Thyssen','TIANDA'].forEach(m=>{const b=document.getElementById('marca-'+m);if(b)b.classList.remove('on');});
+  // Reset empresa chips
+  document.querySelectorAll('.empresa-chip').forEach(s=>{s.style.background='#fff';s.style.color='var(--text)';s.style.borderColor='var(--border)';});
   document.querySelectorAll('#fields-sancion span[onclick]').forEach(s=>{s.style.background='#fff';s.style.color='';s.style.borderColor='var(--border)';});
   selSev='';selTurno='';photoFiles=[];photoURLs=[];invs=[];
   document.getElementById('photo-row').innerHTML='';
