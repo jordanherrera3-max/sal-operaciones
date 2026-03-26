@@ -610,7 +610,6 @@ input[type=file]{display:none}
               <div onclick="setPuente('18')" id="pb-18" class="puente-btn">18</div>
               <div onclick="setPuente('19')" id="pb-19" class="puente-btn">19</div>
               <div onclick="setPuente('19A')" id="pb-19A" class="puente-btn" style="font-size:11px">19A</div>
-              <div onclick="setPuente('20')" id="pb-20" class="puente-btn">20</div>
             </div>
             <input type="hidden" id="f-puente-num" value="">
             <input type="hidden" id="f-puente-pos" value="">
@@ -821,6 +820,13 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 
+// Expose to window so createUser() can use them
+window._firebaseConfig = firebaseConfig;
+window._initializeApp = initializeApp;
+window._getAuth = getAuth;
+window._createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+window._signOut = signOut;
+
 
 const TYPE_LABELS={accidente:'Accidente / Colisión',incidente:'Incidente operativo',sancion:'Sanción conductor / peatón',derrame:'Derrame combustible / hidráulico',fod:'FOD — Objeto foráneo',puente:'Falla de puente de abordaje'};
 
@@ -1018,10 +1024,10 @@ window.createUser=async()=>{
   if(!email||!pass){showToast('Completa correo y contraseña');return;}
   if(pass.length<6){showToast('La contraseña debe tener al menos 6 caracteres');return;}
   try{
-    const secondary=initializeApp(firebaseConfig,'secondary');
-    const secAuth=getAuth(secondary);
-    await createUserWithEmailAndPassword(secAuth,email,pass);
-    await signOut(secAuth);
+    const secondary=window._initializeApp(window._firebaseConfig,'secondary');
+    const secAuth=window._getAuth(secondary);
+    await window._createUserWithEmailAndPassword(secAuth,email,pass);
+    await window._signOut(secAuth);
     document.getElementById('new-user-email').value='';
     document.getElementById('new-user-pass').value='';
     showToast('Usuario creado: '+email);
@@ -1391,11 +1397,11 @@ window.setMarcaPuente=function(marca){
 window.setPuente=function(num){
   document.getElementById('f-puente-num').value='Puente '+num;
   document.getElementById('f-puente-pos').value='Posición '+num;
-  // Update all buttons
-  for(let i=1;i<=17;i++){
-    const btn=document.getElementById('pb-'+i);
-    if(btn)btn.classList.toggle('on', i===parseInt(num));
-  }
+  // Update all buttons including 19A
+  ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','19A'].forEach(n=>{
+    const btn=document.getElementById('pb-'+n);
+    if(btn)btn.classList.toggle('on', String(n)===String(num));
+  });
 };
 
 window.setVia=function(tipo){
@@ -1525,7 +1531,7 @@ function resetForm(){
   ['f-pos','f-zona','f-pos-normal','f-operador','f-desc','f-oficial','f-infractor','f-empresa','f-fod-desc','f-volumen','f-puente-num','f-puente-pos','f-puente-vuelo','f-hora-suceso','f-vehiculo-num','f-puente-marca'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f-infractor-tipo','f-normativa','f-aeronave-tipo','f-vehiculo-tipo','f-sustancia','f-fod-area','f-fod-removed','f-puente-falla','f-puente-estado','f-derrame-accion'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
   // Reset puente buttons
-  ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','19A','20'].forEach(n=>{const b=document.getElementById('pb-'+n);if(b)b.classList.remove('on');});
+  ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','19A'].forEach(n=>{const b=document.getElementById('pb-'+n);if(b)b.classList.remove('on');});
   // Reset posicion buttons
   for(let i=1;i<=20;i++){const b=document.getElementById('pos-btn-'+i);if(b)b.classList.remove('on');}
   // Reset marca puente
