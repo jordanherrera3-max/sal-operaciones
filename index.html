@@ -939,8 +939,8 @@ window.submitReport=async()=>{
         reader.onerror=rej;
         reader.readAsDataURL(f);
       });
-      // Compress if too large
-      const compressed=await compressImage(base64, 400, 0.4);
+      // Compress aggressively to stay under Firestore 1MB doc limit
+      const compressed=await compressImage(base64, 300, 0.3);
       uploadedURLs.push(compressed);
       const pct=Math.round(((i+1)/photoFiles.length)*100);
       document.getElementById('progress-fill').style.width=pct+'%';
@@ -978,13 +978,14 @@ window.submitReport=async()=>{
 
   try{
     await addDoc(collection(db,'incidentes'),r);
-    resetForm();backToTypes();showToast('Incidente registrado correctamente');
+    resetForm();backToTypes();showToast('✅ Incidente registrado correctamente');
   }catch(e){
-    console.error(e);
-    showToast('Error al guardar: '+e.message);
+    console.error('Firestore error:',e);
+    alert('Error al guardar:\n\n' + (e.message||e.code||JSON.stringify(e)));
+  }finally{
+    btn.disabled=false;btn.classList.remove('loading');
+    document.getElementById('btn-txt').textContent='Registrar incidente';
   }
-  btn.disabled=false;btn.classList.remove('loading');
-  document.getElementById('btn-txt').textContent='Registrar incidente';
 };
 
 // EDIT / DELETE
