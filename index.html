@@ -949,34 +949,34 @@ window.submitReport=async()=>{
     document.getElementById('upload-progress').classList.remove('show');
   }
 
+  try{
   const turnoLabel=selTurno?`Turno ${selTurno} (${selTurno==='Alfa'?'06:00–14:00':selTurno==='Bravo'?'14:00–22:00':'22:00–06:00'})`:'';
   const r={
     tipo:selType, severidad:selSev||'baja',
     fecha:new Date().toLocaleDateString('es-SV'),
     hora:new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'}),
-    hora_suceso:document.getElementById('f-hora-suceso').value||'No especificada',
+    hora_suceso:document.getElementById('f-hora-suceso')?.value||'No especificada',
     posicion: pos || (isPuenteType ? (document.getElementById('f-puente-num')?.value||'') : ''),
     zona: isSancionType ? (document.getElementById('f-zona')?.value||'') : '',
     via_tipo: document.getElementById('f-via-tipo')?.value||'',
     vehiculo_tipo: document.getElementById('f-vehiculo-tipo')?.value||'',
     vehiculo_num: document.getElementById('f-vehiculo-num')?.value||'',
     puente_marca: document.getElementById('f-puente-marca')?.value||'',
-    aeronave_tipo:document.getElementById('f-aeronave-tipo').value,
-    operador:document.getElementById('f-operador').value,
+    aeronave_tipo:document.getElementById('f-aeronave-tipo')?.value||'',
+    operador:document.getElementById('f-operador')?.value||'',
     descripcion:desc, oficial, turno:turnoLabel,
-    testigos:document.getElementById('f-testigos').value,
-    gps:document.getElementById('gps-txt').textContent,
+    testigos:document.getElementById('f-testigos')?.value||'',
+    gps:document.getElementById('gps-txt')?.textContent||'',
     fotos:uploadedURLs.length, fotoURLs:uploadedURLs,
     involucrados:invs.join(', '),
     registradoPor:currentUser?.email||'',
     createdAt:serverTimestamp()
   };
-  if(selType==='sancion'){r.infractor=document.getElementById('f-infractor').value;r.infractor_tipo=document.getElementById('f-infractor-tipo').value;r.empresa=document.getElementById('f-empresa').value;r.normativa=document.getElementById('f-normativa').value;}
-  if(selType==='derrame'){r.sustancia=document.getElementById('f-sustancia').value;r.volumen=document.getElementById('f-volumen').value;r.derrame_accion=document.getElementById('f-derrame-accion').value;}
-  if(selType==='fod'){r.fod_desc=document.getElementById('f-fod-desc').value;r.fod_area=document.getElementById('f-fod-area').value;r.fod_removed=document.getElementById('f-fod-removed').value;}
-  if(selType==='puente'){r.puente_num=document.getElementById('f-puente-num').value;r.puente_pos=document.getElementById('f-puente-pos').value;r.puente_falla=document.getElementById('f-puente-falla').value;r.puente_estado=document.getElementById('f-puente-estado').value;r.puente_vuelo=document.getElementById('f-puente-vuelo').value;}
+  if(selType==='sancion'){r.infractor=document.getElementById('f-infractor')?.value||'';r.infractor_tipo=document.getElementById('f-infractor-tipo')?.value||'';r.empresa=document.getElementById('f-empresa')?.value||'';r.normativa=document.getElementById('f-normativa')?.value||'';}
+  if(selType==='derrame'){r.sustancia=document.getElementById('f-sustancia')?.value||'';r.volumen=document.getElementById('f-volumen')?.value||'';r.derrame_accion=document.getElementById('f-derrame-accion')?.value||'';}
+  if(selType==='fod'){r.fod_desc=document.getElementById('f-fod-desc')?.value||'';r.fod_area=document.getElementById('f-fod-area')?.value||'';r.fod_removed=document.getElementById('f-fod-removed')?.value||'';}
+  if(selType==='puente'){r.puente_num=document.getElementById('f-puente-num')?.value||'';r.puente_pos=document.getElementById('f-puente-pos')?.value||'';r.puente_falla=document.getElementById('f-puente-falla')?.value||'';r.puente_estado=document.getElementById('f-puente-estado')?.value||'';r.puente_vuelo=document.getElementById('f-puente-vuelo')?.value||'';}
 
-  try{
     await addDoc(collection(db,'incidentes'),r);
     resetForm();backToTypes();showToast('✅ Incidente registrado correctamente');
   }catch(e){
